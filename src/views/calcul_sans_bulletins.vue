@@ -1,0 +1,2110 @@
+<template>
+  <Header />
+  <div class="container">
+    <!-- TITRES -->
+    <div class="titles">
+      <h1>Calcul sans bulletins</h1>
+      <p>
+        Renseignez les informations du salarié pour calculer l'ensemble des
+        droits à la rupture
+      </p>
+    </div>
+
+    <!-- SECTION INFORMATIONS DU SALARIÉ -->
+    <section id="info-salarie" class="section-info">
+      <div class="section-container">
+        <h2>* Informations du salarié</h2>
+
+        <div class="input-section">
+          <div class="form-group">
+            <label>Nom et Prénoms du salarié</label>
+            <input type="text" v-model="nom" />
+          </div>
+
+          <div class="form-group">
+            <label>Catégorie</label>
+            <select v-model="categorie">
+              <option disabled value="">Sélectionner</option>
+              <option value="ouvrier">Ouvrier</option>
+              <option value="employe">Employé</option>
+              <option value="agent_maitrise">Agent de maîtrise</option>
+              <option value="cadre">Cadre</option>
+              <option value="cadre_superieur">Cadre supérieur</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Type de contrat</label>
+            <select v-model="typeContrat">
+              <option disabled value="">Sélectionner</option>
+              <option value="cdi">CDI</option>
+              <option value="cdd">CDD</option>
+              <option value="saisonnier">Contrat saisonnier</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Mode de paiement</label>
+            <select v-model="modePaiement">
+              <option disabled value="">Sélectionner</option>
+              <option value="mois">Au mois</option>
+              <option value="heure">À l'heure</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Date d'embauche</label>
+            <input type="date" v-model="dateEmbauche" />
+          </div>
+
+          <div class="form-group">
+            <label>Date de rupture</label>
+            <input type="date" v-model="dateRupture" />
+          </div>
+
+          <div class="form-group">
+            <label>Date de retour du dernier congé</label>
+            <input type="date" v-model="dateRetourConge" />
+          </div>
+
+          <!-- RESULTAT ANCIENNETÉ -->
+          <div class="result-box" v-if="ancienneteDetail">
+            <h3>Ancienneté Calculée</h3>
+
+            <div v-if="ancienneteDetail.erreur" class="error-message">
+              ⚠ {{ ancienneteDetail.erreur }}
+            </div>
+
+            <div v-else>
+              <div class="result-item">
+                Années :
+                <span class="value">{{ ancienneteDetail.annees }} ans</span>
+              </div>
+              <div class="result-item">
+                Mois :
+                <span class="value">{{ ancienneteDetail.mois }} mois</span>
+              </div>
+              <div class="result-item">
+                Jours :
+                <span class="value">{{ ancienneteDetail.jours }} jours</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION SMMBI -->
+    <section id="salaires" class="section-info">
+      <div class="section-container">
+        <h2>* Reconstitution du Salaire Moyen Mensuel (SMMBI)</h2>
+        <p class="section-hint">
+          Indiquer: Dates d'embauche et de rupture, SMCC
+        </p>
+
+        <div class="input-section">
+          <div class="form-group">
+            <label>Salaire Minimum Conventionnel Catégoriel (SMCC)</label>
+            <input
+              type="number"
+              v-model.number="salaireMinCat"
+              placeholder="Ex: 150000" />
+          </div>
+
+          <div class="form-group">
+            <label>Inclure la prime d'ancienneté ?</label>
+            <select v-model="includeAnciennete">
+              <option value="non">NON</option>
+              <option value="oui">OUI</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Inclure la gratification ?</label>
+            <select v-model="includeGratification">
+              <option value="non">NON</option>
+              <option value="oui">OUI</option>
+            </select>
+          </div>
+
+          <!-- RESULTATS -->
+          <div class="result-box" v-if="smbbiDetail">
+            <h3>SMMBI Reconstitué</h3>
+
+            <div class="result-item">
+              Taux prime d'ancienneté courant :
+              <span class="value">{{ tauxAnciennete }} %</span>
+            </div>
+
+            <div class="result-item">
+              Quote-part prime d'ancienneté mensuelle :
+              <span class="value">{{
+                formatMoney(smbbiDetail.primeAnciennete)
+              }}</span>
+            </div>
+
+            <div class="result-item">
+              Quote-part gratification mensuelle :
+              <span class="value">{{
+                formatMoney(smbbiDetail.gratificationMensuelle)
+              }}</span>
+            </div>
+
+            <div class="result-item total">
+              <strong>SMMBI RECONSTITUÉ : </strong>
+              <span class="value highlight">{{
+                formatMoney(smbbiDetail.total)
+              }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INDEMNITÉ DE LICENCIEMENT -->
+    <section id="indemnite-licenciement">
+      <div class="section-container indem-licenciement">
+        <h3 style="margin-bottom: 15px">I- INDEMNITÉ DE LICENCIEMENT</h3>
+        <p class="section-hint">
+          Indiquer : Type contrat, les Dates d'embauches et de rupture
+        </p>
+
+        <!-- CAS NON APPLICABLE -->
+        <div v-if="typeContrat !== 'cdi'" class="info-message">
+          ⚠ L'indemnité de licenciement s'applique uniquement aux contrats CDI.
+        </div>
+
+        <!-- CAS VALIDE -->
+        <div
+          v-else-if="
+            typeContrat === 'cdi' &&
+            ancienneteDetail &&
+            !ancienneteDetail.erreur &&
+            smbbiDetail
+          "
+          class="result2">
+          <h3>Résultats Indemnité de Licenciement</h3>
+
+          <!-- Calcul par tranche -->
+          <div
+            class="result-item"
+            v-for="(tranche, i) in tranchesLicenciement"
+            :key="i">
+            <div>
+              Tranche {{ tranche.label }} ({{ tranche.taux * 100 }}%) :
+              <span class="value">
+                {{
+                  tranche.montant.toLocaleString("fr-FR", {
+                    maximumFractionDigits: 0,
+                  })
+                }}
+                FCFA
+              </span>
+            </div>
+          </div>
+
+          <!-- Résultat total -->
+          <div class="result-item">
+            <div class="total">
+              <strong>INDEMNITÉ DE LICENCIEMENT : </strong>
+              <span class="value">
+                {{
+                  indemniteLicenciement.toLocaleString("fr-FR", {
+                    maximumFractionDigits: 0,
+                  })
+                }}
+                FCFA
+              </span>
+            </div>
+          </div>
+
+          <!-- Base légale -->
+          <h4 class="legal-title">Base légale</h4>
+          <p class="legal-text">
+            Art. 18.16 du Code du travail, Art. 39 de la CCNI et Décret n°
+            2017-210
+          </p>
+
+          <!-- Méthode -->
+          <h4 style="margin: 20px 0 10px 0">Méthodes de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            ‣ 1 à 5 ans : SMMBI × 30% × durée<br />
+            ‣ 6 à 10 ans : SMMBI × 35% × durée<br />
+            ‣ > 10 ans : SMMBI × 40% × durée<br />
+            ‣ Conversion : mois/12, jours/360
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONGÉS PAYÉS -->
+    <section id="conges-payes">
+      <div class="section-container conge-box">
+        <h3>II - INDEMNITÉ DE CONGÉS PAYÉS</h3>
+        <p class="section-hint">
+          Indiquer : Dates d'embauches, de rupture et de retour dernier congé
+        </p>
+
+        <div class="input-section">
+          <div class="form-group">
+            <label>Majoration médaille (jours)</label>
+            <input
+              type="number"
+              v-model.number="joursMajorationMedaille"
+              placeholder="0" />
+          </div>
+
+          <div class="form-group">
+            <label>Majoration enfants (jours)</label>
+            <input
+              type="number"
+              v-model.number="joursMajorationEnfant"
+              placeholder="0" />
+          </div>
+
+          <!-- RESULTATS -->
+          <div v-if="dprJours > 0 && smbbiDetail" class="result-box result2">
+            <h3>Résultats Congés Payés</h3>
+
+            <div class="result-item">
+              DPR (jours) : <span class="value">{{ dprJours }}</span>
+            </div>
+
+            <div class="result-item">
+              DPR (mois) : <span class="value">{{ dprMois.toFixed(2) }}</span>
+            </div>
+
+            <div class="result-item">
+              Jours ouvrables (JO) :
+              <span class="value">{{ joursOuvrables }}</span>
+            </div>
+
+            <div class="result-item">
+              Jours calendaires (JC) :
+              <span class="value">{{ joursCalendaires }}</span>
+            </div>
+
+            <div class="result-item">
+              Majoration ancienneté :
+              <span class="value">{{ majorationAnciennete }} jours</span>
+            </div>
+
+            <div class="result-item">
+              Durée congé total :
+              <span class="value">{{ dureeConge }} jours</span>
+            </div>
+
+            <div class="result-item">
+              SMMBI période :
+              <span class="value"
+                >{{ smmbiPeriode.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+
+            <div class="result-item">
+              Salaire moyen journalier :
+              <span class="value">
+                {{
+                  salaireJournalier.toLocaleString("fr-FR", {
+                    maximumFractionDigits: 0,
+                  })
+                }}
+                FCFA
+              </span>
+            </div>
+
+            <div class="result-item total">
+              <strong>INDEMNITÉ DE CONGÉS PAYÉS : </strong>
+              <span class="value big"
+                >{{ indemniteConge.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+
+            <h4 class="legal-title">Bases légales</h4>
+            <p class="legal-text">
+              Article 25.1 à 25.7 du Code du travail<br />
+              Articles 68 à 71 de la Convention Collective
+              Interprofessionnelle<br />
+              Décret n°98-39 du 28 janvier 1998 relatif au régime des congés
+              payés
+            </p>
+
+            <h4 style="margin: 20px 0 10px 0">Méthodes de calcul</h4>
+            <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+              DPR = Date rupture – Date retour congé → en jours<br />
+              DPR mois = DPR ÷ 30<br />
+              JO = DPR × 2,2 (arrondi supérieur)<br />
+              JC = JO × 1,25 (arrondi supérieur)<br />
+              DC = JC + majorations<br />
+              SMJ = SMMBI ÷ 30<br />
+              Indemnité = SMJ × DC
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRÉAVIS -->
+    <section id="preavis">
+      <div class="section-container preavis-box">
+        <h3>C. INDEMNITÉ COMPENSATRICE DE PRÉAVIS</h3>
+        <p class="section-hint">
+          Indiquer : la catégorie professionnelle et le SMMBI
+        </p>
+
+        <div
+          class="result-box result2"
+          v-if="dureePreavisAffichage && smbbiDetail">
+          <h3>Résultats Indemnité compensatrice de préavis</h3>
+
+          <div class="result-item">
+            <div>
+              Salaire Moyen Mensuel (SMMBI) :
+              <span class="value">{{ formatMoney(smbbiDetail.total) }}</span>
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Durée du préavis :
+              <span class="value">{{ dureePreavisAffichage }}</span>
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              <strong>INDEMNITÉ COMPENSATRICE DE PRÉAVIS : </strong>
+              <span class="value">{{ formatMoney(indemnitePreavis) }}</span>
+            </div>
+          </div>
+
+          <!-- Base légale -->
+          <h4 class="legal-title">Bases légales</h4>
+          <p class="legal-text">Art. 34 & 35 CCI • Art. 18.7 Code du travail</p>
+
+          <!-- Méthode -->
+          <h4 style="margin: 20px 0 10px 0">Méthodes de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            Indemnité = SMMBI × durée du préavis (en mois)
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- AGGRAVATION DE PRÉAVIS -->
+    <section id="aggravation-preavis">
+      <div class="section-container aggravation-box">
+        <h3>D. INDEMNITÉ DE L'AGGRAVATION DE PRÉAVIS</h3>
+        <p class="section-hint">
+          Indiquer: le Mode de paiement et SMMBI reconstitué
+        </p>
+
+        <div class="input-section">
+          <div class="form-group">
+            <label style="margin-bottom: 10px">Cas d'application</label>
+            <select v-model="aggravationActive">
+              <option :value="false">Non</option>
+              <option :value="true">
+                Oui (rupture pendant / autour du congé)
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Résultat -->
+        <div class="result-box result2" v-if="aggravationActive && smbbiDetail">
+          <h3>Résultat Indemnité de l'aggravation de préavis</h3>
+
+          <div class="result-item">
+            <div>
+              Mode de paiement :
+              <span class="value">
+                {{ modePaiement === "mois" ? "Mensualisé" : "Horaire" }}
+              </span>
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              <strong>INDEMNITÉ DE L'AGGRAVATION : </strong>
+              <span class="value"
+                >{{ indemniteAggravation.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <!-- Base légale -->
+          <h4 class="legal-title">Base légale</h4>
+          <p class="legal-text">
+            Article 36 de la Convention Collective Interprofessionnelle
+          </p>
+
+          <!-- Méthode -->
+          <h4 style="margin: 20px 0 10px 0">Méthodes de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            Mensualisé : +2 mois de salaire<br />
+            Horaire : +1 mois de salaire
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- GRATIFICATION -->
+    <section id="gratification">
+      <div class="section-container gratification-box">
+        <h3>E. GRATIFICATION</h3>
+        <p class="section-hint">
+          Indiquer: Salaire Minima Conventionnel Catégoriel
+        </p>
+
+        <div class="input-section">
+          <div class="form-group">
+            <label>Type de calcul</label>
+            <select v-model="typeGratification">
+              <option value="" disabled>Sélectionner</option>
+              <option value="annuelle">Annuelle</option>
+              <option value="prorata">Prorata temporis</option>
+            </select>
+          </div>
+
+          <div class="form-group" v-if="typeGratification === 'prorata'">
+            <label>Nombre de jours de référence</label>
+            <input
+              type="number"
+              v-model.number="joursReference"
+              placeholder="ex: 180" />
+          </div>
+        </div>
+
+        <!-- RESULTAT -->
+        <div class="result-box result2" v-if="gratificationAnnuelle > 0">
+          <h3>Résultats Gratification</h3>
+          <div class="result-item">
+            <div>
+              <strong>TOTAL : </strong>
+              <span class="value"
+                >{{ gratificationAnnuelle.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <h4 class="legal-title">Base légale</h4>
+          <p class="legal-text">
+            Art. 8 Code du travail et barème des salaires minimas conventionnels
+            catégoriels. Le taux minimum de la gratification est de 75%.
+          </p>
+
+          <h4 style="margin: 20px 0 10px 0">Méthode de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            ‣ Gratification annuelle : Salaire Minima Conventionnel × 75%<br />
+            ‣ Gratification prorata temporis : Salaire Minima Conventionnel ×
+            75% × (Jours de référence ÷ 360)
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RAPPEL DE PRIME D'ANCIENNETÉ -->
+    <section id="rappel-prime">
+      <div class="section-container indem-licenciement">
+        <h3>F. RAPPEL DE PRIME D'ANCIENNETÉ</h3>
+        <p class="section-hint">
+          Indiquer: Dates d'embauche et de rupture, Salaire minima conventionnel
+          catégoriel
+        </p>
+
+        <!-- ERREUR -->
+        <div v-if="ancienneteDetail?.erreur" class="info-message">
+          ⚠ {{ ancienneteDetail.erreur }}
+        </div>
+
+        <!-- RESULTAT -->
+        <div
+          v-else-if="dateEmbauche && dateRupture && salaireMinCat"
+          class="result-box result2">
+          <!-- NON ELIGIBLE -->
+          <div
+            v-if="ancienneteDetail && ancienneteDetail.annees < 2"
+            class="info-message">
+            ⚠ Ancienneté < 2 ans → pas de rappel.
+          </div>
+
+          <!-- RESULTAT -->
+          <div v-else-if="ancienneteDetail">
+            <h3>Résultats Rappel de Prime d'Ancienneté</h3>
+
+            <div class="result-item">
+              <div>
+                Salaire minimum :
+                <span class="value"
+                  >{{ salaireMinCat.toLocaleString("fr-FR") }} FCFA</span
+                >
+              </div>
+            </div>
+
+            <div class="result-item">
+              <div>
+                Ancienneté :
+                <span class="value">{{ ancienneteDetail.annees }} ans</span>
+              </div>
+            </div>
+
+            <h4 style="margin: 20px 0">Détail par tranche</h4>
+            <div
+              v-for="(item, i) in tranchesRappel"
+              :key="i"
+              class="result-item">
+              <div>
+                {{ item.label }} → {{ item.taux }}% × {{ item.mois }} mois :
+                <span class="value"
+                  >{{ item.montant.toLocaleString("fr-FR") }} FCFA</span
+                >
+              </div>
+            </div>
+
+            <div class="result-item highlight">
+              <div>
+                <strong>TOTAL RAPPEL : </strong>
+                <span class="value"
+                  >{{ totalRappel.toLocaleString("fr-FR") }} FCFA</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <h4 class="legal-title">Base légale</h4>
+          <p class="legal-text">
+            Article 55 de la Convention Collective Interprofessionnelle (CCI)
+          </p>
+
+          <h4 style="margin: 20px 0 10px 0">Méthode de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            ‣ Le rappel est calculé sur les 2 dernières années (24 mois).<br />
+            ‣ Le taux de la prime évolue chaque année selon l'ancienneté.<br />
+            ‣ Chaque période est calculée séparément (année par année).<br />
+            ‣ Montant = Taux × Salaire minimum × nombre de mois.<br />
+            ‣ Le total correspond à la somme des montants de chaque tranche.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RÉCAPITULATIF TOTAL DES INDEMNITÉS -->
+    <section id="recapitulatif">
+      <div class="section-container recap-box">
+        <h2 style="text-align: center">RÉCAPITULATIF TOTAL DES INDEMNITÉS</h2>
+        <div style="margin-top: 20px">
+          <div class="result-item" v-if="indemniteLicenciement > 0">
+            <div>
+              Indemnité de licenciement :
+              <span class="value">
+                {{
+                  indemniteLicenciement.toLocaleString("fr-FR", {
+                    maximumFractionDigits: 0,
+                  })
+                }}
+                FCFA
+              </span>
+            </div>
+          </div>
+
+          <div class="result-item" v-if="indemniteConge > 0">
+            <div>
+              Indemnité compensatrice de congés payés :
+              <span class="value"
+                >{{ indemniteConge.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item" v-if="indemnitePreavis > 0">
+            <div>
+              Indemnité compensatrice de préavis :
+              <span class="value"
+                >{{ indemnitePreavis.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div
+            class="result-item"
+            v-if="aggravationActive && indemniteAggravation > 0">
+            <div>
+              Indemnité d'aggravation de préavis :
+              <span class="value"
+                >{{ indemniteAggravation.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item" v-if="gratificationAnnuelle > 0">
+            <div>
+              Gratification :
+              <span class="value"
+                >{{ gratificationAnnuelle.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item" v-if="totalRappel > 0">
+            <div>
+              Rappel prime d'ancienneté :
+              <span class="value"
+                >{{ totalRappel.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item highlight">
+            <div>
+              <strong>TOTAL GÉNÉRAL DES DROITS : </strong>
+              <span class="value"
+                >{{ totalDroits.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOMMAGES-INTÉRÊTS LICENCIEMENT ABUSIF -->
+    <section id="dommages-licenciement-abusif">
+      <div class="section-container indem-abusif">
+        <h3>G. DOMMAGES-INTÉRÊTS POUR LICENCIEMENT ABUSIF</h3>
+        <p class="section-hint">
+          Indiquer : Type de contrat, Dates d'embauche et de rupture, SMMBI
+          reconstitué
+        </p>
+
+        <div v-if="typeContrat !== 'cdi'" class="info-message">
+          ⚠ Les dommages-intérêts s'appliquent uniquement aux CDI.
+        </div>
+
+        <div
+          v-else-if="
+            ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail
+          "
+          class="result-box result2">
+          <h3>Résultats Dommages-Intérêts pour licenciement abusif</h3>
+
+          <div class="result-item">
+            <div>
+              SMMBI (base de calcul) :
+              <span class="value"
+                >{{ smbbiDetail.total.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Ancienneté :
+              <span class="value">{{ ancienneteDetail.annees }} ans</span>
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Plancher légal :
+              <span class="value"
+                >{{ plancherLegal.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Plafond légal :
+              <span class="value"
+                >{{ plafondLegal.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <!-- CORRIGÉ : on affiche dommagesInterets (montant encadré), pas montantBrutDI -->
+          <div class="result-item highlight">
+            <div>
+              <strong>TOTAL DOMMAGES : </strong>
+              <span class="value"
+                >{{ dommagesInterets.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <h4 class="legal-title">Base légale</h4>
+          <p class="legal-text">
+            Code du travail – licenciement abusif (dommages-intérêts fixés entre
+            un minimum et un maximum en fonction de l'ancienneté)
+          </p>
+
+          <h4 style="margin: 20px 0 10px 0">Méthode de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            ‣ Montant de base = SMMBI × nombre d'années<br />
+            ‣ Plancher = 3 mois de salaire<br />
+            ‣ Plafond = 20 mois de salaire<br />
+            ‣ Le montant final est encadré entre ces limites
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOMMAGES CNPS -->
+    <section id="dommages-cnps">
+      <div class="section-container cnps-box">
+        <h3>H. DOMMAGES-INTÉRÊTS — NON-DÉCLARATION À LA CNPS</h3>
+        <p class="section-hint">
+          Indiquer: Dates d'embauche et de rupture, SMMBI reconstitué
+        </p>
+
+        <div
+          class="result-box result2"
+          v-if="ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail">
+          <h3>Résultats Dommages CNPS</h3>
+
+          <div class="result-item">
+            <div>
+              SMMBI (base de cotisation) :
+              <span class="value"
+                >{{ smbbiDetail.total.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Taux cotisation patronale retraite (CNPS) :
+              <span class="value">7,7 %</span>
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Durée totale du contrat :
+              <span class="value">{{ dureeContratMois }} mois</span>
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Cotisation mensuelle non versée :
+              <span class="value"
+                >{{ cotisationMensuelle.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item highlight">
+            <div>
+              <strong>TOTAL DOMMAGES : </strong>
+              <span class="value"
+                >{{ totalDommagesCNPS.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <h4 class="legal-title">Base légale</h4>
+          <p class="legal-text">
+            Code de prévoyance sociale – obligation de déclaration à la CNPS
+          </p>
+
+          <h4 style="margin: 20px 0 10px 0">Méthode de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            ‣ Cotisation mensuelle = SMMBI × 7,7%<br />
+            ‣ Durée = nombre total de mois travaillés<br />
+            ‣ Total = cotisation mensuelle × durée
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOMMAGES CERTIFICAT DE TRAVAIL -->
+    <section id="dommages-certificat">
+      <div class="section-container certificat-box">
+        <h3>I. DOMMAGES-INTÉRÊTS — NON-DÉLIVRANCE DU CERTIFICAT DE TRAVAIL</h3>
+        <p class="section-hint">
+          Indiquer: SMMBI reconstitué et le nombre de mois
+        </p>
+
+        <div class="input-section">
+          <div class="form-group">
+            <label>Nombre de mois accordé</label>
+            <input
+              type="number"
+              v-model.number="moisCertificat"
+              placeholder="Ex: 3" />
+          </div>
+        </div>
+
+        <div
+          class="result-box result2"
+          v-if="moisCertificat > 0 && smbbiDetail">
+          <h3>Résultats Dommages Certificat</h3>
+
+          <div class="result-item">
+            <div>
+              SMMBI :
+              <span class="value"
+                >{{ smbbiDetail.total.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Nombre de mois accordé :
+              <span class="value">{{ moisCertificat }} mois</span>
+            </div>
+          </div>
+
+          <div class="result-item highlight">
+            <div>
+              <strong>TOTAL DOMMAGES : </strong>
+              <span class="value"
+                >{{ totalCertificat.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <h4 class="legal-title">Base légale</h4>
+          <p class="legal-text">
+            Code du travail – obligation de délivrance du certificat de travail
+          </p>
+
+          <h4 style="margin: 20px 0 10px 0">Méthode de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            ‣ Montant = SMMBI × nombre de mois accordé par le juge
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DOMMAGES RELEVÉ NOMINATIF -->
+    <section id="dommages-releve">
+      <div class="section-container certificat-box">
+        <h3>
+          J. DOMMAGES-INTÉRÊTS — NON-DÉLIVRANCE DU RELEVÉ NOMINATIF DE SALAIRE
+        </h3>
+        <p class="section-hint">
+          Indiquer: SMMBI reconstitué et le nombre de mois
+        </p>
+
+        <div class="input-section">
+          <div class="form-group">
+            <label>Nombre de mois accordé</label>
+            <input
+              type="number"
+              v-model.number="moisReleve"
+              placeholder="Ex: 3" />
+          </div>
+        </div>
+
+        <div class="result-box result2" v-if="moisReleve > 0 && smbbiDetail">
+          <h3>Résultats Dommages Relevé Nominatif</h3>
+
+          <div class="result-item">
+            <div>
+              SMMBI :
+              <span class="value"
+                >{{ smbbiDetail.total.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Nombre de mois accordé :
+              <span class="value">{{ moisReleve }} mois</span>
+            </div>
+          </div>
+
+          <div class="result-item highlight">
+            <div>
+              <strong>TOTAL DOMMAGES : </strong>
+              <span class="value"
+                >{{ totalReleve.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <h4 class="legal-title">Base légale</h4>
+          <p class="legal-text">
+            Code du travail – obligation de délivrance des documents de fin de
+            contrat
+          </p>
+
+          <h4 style="margin: 20px 0 10px 0">Méthode de calcul</h4>
+          <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+            ‣ Montant = SMMBI × nombre de mois accordé par le juge
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RÉCAPITULATIF DES DOMMAGES-INTÉRÊTS -->
+    <section id="recap-dommages">
+      <div class="section-container recap-box">
+        <h2 style="text-align: center">RÉCAPITULATIF DES DOMMAGES-INTÉRÊTS</h2>
+
+        <div style="margin-top: 20px">
+          <div class="result-item" v-if="dommagesInterets > 0">
+            <div>
+              Licenciement abusif :
+              <span class="value"
+                >{{ dommagesInterets.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item" v-if="totalDommagesCNPS > 0">
+            <div>
+              Non-déclaration CNPS :
+              <span class="value"
+                >{{ totalDommagesCNPS.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item" v-if="totalCertificat > 0">
+            <div>
+              Certificat de travail :
+              <span class="value"
+                >{{ totalCertificat.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item" v-if="totalReleve > 0">
+            <div>
+              Relevé nominatif de salaire :
+              <span class="value"
+                >{{ totalReleve.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item highlight">
+            <div>
+              <strong>TOTAL DOMMAGES-INTÉRÊTS : </strong>
+              <span class="value"
+                >{{ totalDommages.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOTAL GÉNÉRAL -->
+    <section id="total-general">
+      <div class="section-container recap-box">
+        <h2 style="text-align: center">
+          TOTAL GÉNÉRAL (INDÉMNITÉS + DOMMAGES)
+        </h2>
+
+        <div style="margin-top: 20px">
+          <div v-if="totalGeneral === 0" class="info-message">
+            ⚠ Aucun montant calculé pour le moment
+          </div>
+
+          <div v-else>
+            <div class="result-item">
+              <div>
+                Total indemnités :
+                <span class="value"
+                  >{{ totalDroits.toLocaleString("fr-FR") }} FCFA</span
+                >
+              </div>
+            </div>
+
+            <div class="result-item">
+              <div>
+                Total dommages-intérêts :
+                <span class="value"
+                  >{{ totalDommages.toLocaleString("fr-FR") }} FCFA</span
+                >
+              </div>
+            </div>
+
+            <div class="result-item highlight">
+              <div>
+                <strong>TOTAL GLOBAL : </strong>
+                <span class="value big"
+                  >{{ totalGeneral.toLocaleString("fr-FR") }} FCFA</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="btn-container">
+      <button @click="genererPDF" class="btn-pdf">Télécharger le PDF</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <nav>
+      <ul>
+        <li><a href="#info-salarie">Informations du salarié</a></li>
+        <li><a href="#salaires">SMMBI reconstitué</a></li>
+        <li><a href="#indemnite-licenciement">Indemnité licenciement</a></li>
+        <li><a href="#conges-payes">Congés payés</a></li>
+        <li><a href="#preavis">Indemnité préavis</a></li>
+        <li><a href="#aggravation-preavis">Aggravation préavis</a></li>
+        <li><a href="#gratification">Gratification</a></li>
+        <li><a href="#rappel-prime">Rappel prime ancienneté</a></li>
+        <li><a href="#recapitulatif">Récapitulatif Indemnités</a></li>
+        <li><a href="#dommages-licenciement-abusif">Licenciement abusif</a></li>
+        <li><a href="#dommages-cnps">Dommages CNPS</a></li>
+        <li><a href="#dommages-certificat">Certificat de travail</a></li>
+        <li><a href="#dommages-releve">Relevé nominatif</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- CONTENU PDF (caché visuellement) -->
+  <div id="pdf-content" class="pdf-container">
+    <div
+      class="result-box"
+      v-if="
+        nom ||
+        categorie ||
+        typeContrat ||
+        modePaiement ||
+        dateEmbauche ||
+        dateRupture ||
+        dateRetourConge
+      ">
+      <h3>Données du salarié</h3>
+
+      <div class="result-item" v-if="nom">
+        Nom et Prénoms : <span class="value">{{ nom }}</span>
+      </div>
+      <div class="result-item" v-if="categorie">
+        Catégorie : <span class="value">{{ categorie }}</span>
+      </div>
+      <div class="result-item" v-if="typeContrat">
+        Type de contrat : <span class="value">{{ typeContrat }}</span>
+      </div>
+      <div class="result-item" v-if="modePaiement">
+        Mode de paiement : <span class="value">{{ modePaiement }}</span>
+      </div>
+      <div class="result-item" v-if="dateEmbauche">
+        Date d'embauche : <span class="value">{{ dateEmbauche }}</span>
+      </div>
+      <div class="result-item" v-if="dateRupture">
+        Date de rupture : <span class="value">{{ dateRupture }}</span>
+      </div>
+      <div class="result-item" v-if="dateRetourConge">
+        Date retour dernier congé :
+        <span class="value">{{ dateRetourConge }}</span>
+      </div>
+    </div>
+    <!-- INFO ANCIENNETE -->
+    <div class="result-box" v-if="ancienneteDetail">
+      <h3>Ancienneté Calculée</h3>
+
+      <div v-if="ancienneteDetail.erreur" class="error-message">
+        ⚠ {{ ancienneteDetail.erreur }}
+      </div>
+
+      <div v-else>
+        <div class="result-item">
+          Années :
+          <span class="value">{{ ancienneteDetail.annees }} ans</span>
+        </div>
+        <div class="result-item">
+          Mois :
+          <span class="value">{{ ancienneteDetail.mois }} mois</span>
+        </div>
+        <div class="result-item">
+          Jours :
+          <span class="value">{{ ancienneteDetail.jours }} jours</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALAIRE -->
+    <div class="result-box" v-if="smbbiDetail">
+      <h3>SMMBI Reconstitué</h3>
+
+      <div class="result-item">
+        Taux prime d'ancienneté courant :
+        <span class="value">{{ tauxAnciennete }} %</span>
+      </div>
+
+      <div class="result-item">
+        Quote-part prime d'ancienneté mensuelle :
+        <span class="value">{{
+          formatMoney(smbbiDetail.primeAnciennete)
+        }}</span>
+      </div>
+
+      <div class="result-item">
+        Quote-part gratification mensuelle :
+        <span class="value">{{
+          formatMoney(smbbiDetail.gratificationMensuelle)
+        }}</span>
+      </div>
+
+      <div class="result-item total">
+        <strong>SMMBI RECONSTITUÉ : </strong>
+        <span class="value highlight">{{
+          formatMoney(smbbiDetail.total)
+        }}</span>
+      </div>
+    </div>
+
+    <!-- INDEMNITE -->
+    <div
+      v-if="
+        typeContrat === 'cdi' &&
+        ancienneteDetail &&
+        !ancienneteDetail.erreur &&
+        smbbiDetail
+      "
+      class="result2">
+      <h3>Résultats Indemnité de Licenciement</h3>
+
+      <!-- Calcul par tranche -->
+      <div
+        class="result-item"
+        v-for="(tranche, i) in tranchesLicenciement"
+        :key="i">
+        <div>
+          Tranche {{ tranche.label }} ({{ tranche.taux * 100 }}%) :
+          <span class="value">
+            {{
+              tranche.montant.toLocaleString("fr-FR", {
+                maximumFractionDigits: 0,
+              })
+            }}
+            FCFA
+          </span>
+        </div>
+      </div>
+
+      <!-- Résultat total -->
+      <div class="result-item">
+        <div class="total">
+          <strong>INDEMNITÉ DE LICENCIEMENT : </strong>
+          <span class="value">
+            {{
+              indemniteLicenciement.toLocaleString("fr-FR", {
+                maximumFractionDigits: 0,
+              })
+            }}
+            FCFA
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONGE PAYE -->
+
+    <div v-if="dprJours > 0 && smbbiDetail" class="result-box result2">
+      <h3>Résultats Congés Payés</h3>
+
+      <div class="result-item">
+        DPR (jours) : <span class="value">{{ dprJours }}</span>
+      </div>
+
+      <div class="result-item">
+        DPR (mois) : <span class="value">{{ dprMois.toFixed(2) }}</span>
+      </div>
+
+      <div class="result-item">
+        Jours ouvrables (JO) :
+        <span class="value">{{ joursOuvrables }}</span>
+      </div>
+
+      <div class="result-item">
+        Jours calendaires (JC) :
+        <span class="value">{{ joursCalendaires }}</span>
+      </div>
+
+      <div class="result-item">
+        Majoration ancienneté :
+        <span class="value">{{ majorationAnciennete }} jours</span>
+      </div>
+
+      <div class="result-item">
+        Durée congé total :
+        <span class="value">{{ dureeConge }} jours</span>
+      </div>
+
+      <div class="result-item">
+        SMMBI période :
+        <span class="value"
+          >{{ smmbiPeriode.toLocaleString("fr-FR") }} FCFA</span
+        >
+      </div>
+
+      <div class="result-item">
+        Salaire moyen journalier :
+        <span class="value">
+          {{
+            salaireJournalier.toLocaleString("fr-FR", {
+              maximumFractionDigits: 0,
+            })
+          }}
+          FCFA
+        </span>
+      </div>
+
+      <div class="result-item total">
+        Indemnité congés payés :
+        <span class="value big"
+          >{{ indemniteConge.toLocaleString("fr-FR") }} FCFA</span
+        >
+      </div>
+    </div>
+    <!-- PREAVIS -->
+    <div class="result-box result2" v-if="dureePreavisAffichage && smbbiDetail">
+      <h3>Résultats Indemnité compensatrice de préavis</h3>
+
+      <div class="result-item">
+        <div>
+          Salaire Moyen Mensuel (SMMBI) :
+          <span class="value">{{ formatMoney(smbbiDetail.total) }}</span>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Durée du préavis :
+          <span class="value">{{ dureePreavisAffichage }}</span>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Indemnité compensatrice de préavis :
+          <span class="value">{{ formatMoney(indemnitePreavis) }}</span>
+        </div>
+      </div>
+    </div>
+    <!-- AGGRAVATION -->
+    <div class="result-box result2" v-if="aggravationActive && smbbiDetail">
+      <h3>Résultat Indemnité de l'aggravation de préavis</h3>
+
+      <div class="result-item">
+        <div>
+          Mode de paiement :
+          <span class="value">
+            {{ modePaiement === "mois" ? "Mensualisé" : "Horaire" }}
+          </span>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Indemnité d'aggravation :
+          <span class="value"
+            >{{ indemniteAggravation.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+    </div>
+    <!-- GRATIFICATION -->
+    <div class="result-box result2" v-if="gratificationAnnuelle > 0">
+      <h3>Résultats Gratification</h3>
+      <div class="result-item">
+        <div>
+          Gratification :
+          <span class="value"
+            >{{ gratificationAnnuelle.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+    </div>
+    <!-- RECAP INDEM -->
+    <div class="section-container recap-box">
+      <h2 style="text-align: center">RÉCAPITULATIF TOTAL DES INDEMNITÉS</h2>
+      <div style="margin-top: 20px">
+        <div class="result-item" v-if="indemniteLicenciement > 0">
+          <div>
+            Indemnité de licenciement :
+            <span class="value">
+              {{
+                indemniteLicenciement.toLocaleString("fr-FR", {
+                  maximumFractionDigits: 0,
+                })
+              }}
+              FCFA
+            </span>
+          </div>
+        </div>
+
+        <div class="result-item" v-if="indemniteConge > 0">
+          <div>
+            Indemnité compensatrice de congés payés :
+            <span class="value"
+              >{{ indemniteConge.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div class="result-item" v-if="indemnitePreavis > 0">
+          <div>
+            Indemnité compensatrice de préavis :
+            <span class="value"
+              >{{ indemnitePreavis.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div
+          class="result-item"
+          v-if="aggravationActive && indemniteAggravation > 0">
+          <div>
+            Indemnité d'aggravation de préavis :
+            <span class="value"
+              >{{ indemniteAggravation.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div class="result-item" v-if="gratificationAnnuelle > 0">
+          <div>
+            Gratification :
+            <span class="value"
+              >{{ gratificationAnnuelle.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div class="result-item" v-if="totalRappel > 0">
+          <div>
+            Rappel prime d'ancienneté :
+            <span class="value"
+              >{{ totalRappel.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div class="result-item highlight">
+          <div>
+            <strong>TOTAL GÉNÉRAL DES DROITS : </strong>
+            <span class="value"
+              >{{ totalDroits.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOMMAGE LICENCIEMENT -->
+    <div
+      v-if="ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail"
+      class="result-box result2">
+      <h3>Résultats Dommages-Intérêts pour licenciement abusif</h3>
+
+      <div class="result-item">
+        <div>
+          SMMBI (base de calcul) :
+          <span class="value"
+            >{{ smbbiDetail.total.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Ancienneté :
+          <span class="value">{{ ancienneteDetail.annees }} ans</span>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Plancher légal :
+          <span class="value"
+            >{{ plancherLegal.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Plafond légal :
+          <span class="value"
+            >{{ plafondLegal.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+
+      <!-- CORRIGÉ : on affiche dommagesInterets (montant encadré), pas montantBrutDI -->
+      <div class="result-item highlight">
+        <div>
+          <strong>TOTAL DOMMAGES : </strong>
+          <span class="value"
+            >{{ dommagesInterets.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- DOMMAGE CNPS  -->
+
+    <div
+      class="result-box result2"
+      v-if="ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail">
+      <h3>Résultats Dommages CNPS</h3>
+
+      <div class="result-item">
+        <div>
+          SMMBI (base de cotisation) :
+          <span class="value"
+            >{{ smbbiDetail.total.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Taux cotisation patronale retraite (CNPS) :
+          <span class="value">7,7 %</span>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Durée totale du contrat :
+          <span class="value">{{ dureeContratMois }} mois</span>
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Cotisation mensuelle non versée :
+          <span class="value"
+            >{{ cotisationMensuelle.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+
+      <div class="result-item highlight">
+        <div>
+          <strong>TOTAL DOMMAGES : </strong>
+          <span class="value"
+            >{{ totalDommagesCNPS.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- DOMMAGE -->
+
+    <div class="result-box result2" v-if="moisCertificat > 0 && smbbiDetail">
+      <h3>Résultats Dommages Certificat</h3>
+
+      <div class="result-item">
+        <div>
+          SMMBI :
+          <span class="value"
+            >{{ smbbiDetail.total.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Nombre de mois accordé :
+          <span class="value">{{ moisCertificat }} mois</span>
+        </div>
+      </div>
+
+      <div class="result-item highlight">
+        <div>
+          <strong>TOTAL DOMMAGES : </strong>
+          <span class="value"
+            >{{ totalCertificat.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+    </div>
+    <!-- DOMMAGE -->
+
+    <div class="result-box result2" v-if="moisReleve > 0 && smbbiDetail">
+      <h3>Résultats Dommages Relevé Nominatif</h3>
+
+      <div class="result-item">
+        <div>
+          SMMBI :
+          <span class="value"
+            >{{ smbbiDetail.total.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+
+      <div class="result-item">
+        <div>
+          Nombre de mois accordé :
+          <span class="value">{{ moisReleve }} mois</span>
+        </div>
+      </div>
+
+      <div class="result-item highlight">
+        <div>
+          <strong>TOTAL DOMMAGES : </strong>
+          <span class="value"
+            >{{ totalReleve.toLocaleString("fr-FR") }} FCFA</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- RECAP -->
+    <div class="section-container recap-box">
+      <h2 style="text-align: center">RÉCAPITULATIF DES DOMMAGES-INTÉRÊTS</h2>
+
+      <div style="margin-top: 20px">
+        <div class="result-item" v-if="dommagesInterets > 0">
+          <div>
+            Licenciement abusif :
+            <span class="value"
+              >{{ dommagesInterets.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div class="result-item" v-if="totalDommagesCNPS > 0">
+          <div>
+            Non-déclaration CNPS :
+            <span class="value"
+              >{{ totalDommagesCNPS.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div class="result-item" v-if="totalCertificat > 0">
+          <div>
+            Certificat de travail :
+            <span class="value"
+              >{{ totalCertificat.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div class="result-item" v-if="totalReleve > 0">
+          <div>
+            Relevé nominatif de salaire :
+            <span class="value"
+              >{{ totalReleve.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+
+        <div class="result-item highlight">
+          <div>
+            <strong>TOTAL DOMMAGES-INTÉRÊTS : </strong>
+            <span class="value"
+              >{{ totalDommages.toLocaleString("fr-FR") }} FCFA</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECAP -->
+
+    <div class="section-container recap-box">
+      <h2 style="text-align: center">TOTAL GÉNÉRAL (INDÉMNITÉS + DOMMAGES)</h2>
+
+      <div style="margin-top: 20px">
+        <div v-if="totalGeneral === 0" class="info-message">
+          ⚠ Aucun montant calculé pour le moment
+        </div>
+
+        <div v-else>
+          <div class="result-item">
+            <div>
+              Total indemnités :
+              <span class="value"
+                >{{ totalDroits.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item">
+            <div>
+              Total dommages-intérêts :
+              <span class="value"
+                >{{ totalDommages.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+
+          <div class="result-item highlight">
+            <div>
+              <strong>TOTAL GLOBAL : </strong>
+              <span class="value big"
+                >{{ totalGeneral.toLocaleString("fr-FR") }} FCFA</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+  import { ref, computed } from "vue";
+  import Header from "@/components/Header.vue";
+  import html2pdf from "html2pdf.js";
+
+  // =======================
+  // PDF
+  // =======================
+  const genererPDF = () => {
+    const element = document.getElementById("pdf-content");
+
+    const cleanFileName = (name) => {
+      return name
+        .normalize("NFD") // enlève accents
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]/g, "_"); // remplace tout par _
+    };
+    // Active affichage du contenu PDF
+    document.body.classList.add("pdf-mode");
+
+    const opt = {
+      margin: 10,
+      filename: `Calcul_droits_${cleanFileName(nom.value || "salarie")}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 5, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: { mode: ["avoid-all", "css"] },
+    };
+
+    html2pdf()
+      .set(opt)
+      .from(element)
+      .save()
+      .then(() => {
+        // Remet la page normale après génération
+        document.body.classList.remove("pdf-mode");
+      });
+  };
+
+  // =======================
+  // DONNÉES FORMULAIRE
+  // =======================
+  const nom = ref("");
+  const categorie = ref("");
+  const typeContrat = ref("");
+  const modePaiement = ref("");
+
+  // CORRIGÉ : initialisé à null pour éviter que smbbiDetail se déclenche sur 0
+  const salaireMinCat = ref(null);
+
+  const dateEmbauche = ref("");
+  const dateRupture = ref("");
+  const dateRetourConge = ref("");
+
+  const includeAnciennete = ref("oui");
+  const includeGratification = ref("oui");
+
+  // =======================
+  // ANCIENNETÉ
+  // =======================
+  const ancienneteDetail = computed(() => {
+    if (!dateEmbauche.value || !dateRupture.value) return null;
+
+    const debut = new Date(dateEmbauche.value);
+    const fin = new Date(dateRupture.value);
+
+    if (fin < debut) {
+      return {
+        erreur: "La date de rupture est antérieure à la date d'embauche",
+      };
+    }
+
+    let annees = fin.getFullYear() - debut.getFullYear();
+    let mois = fin.getMonth() - debut.getMonth();
+    let jours = fin.getDate() - debut.getDate();
+
+    if (jours < 0) {
+      mois--;
+      const dernierJourMois = new Date(
+        fin.getFullYear(),
+        fin.getMonth(),
+        0,
+      ).getDate();
+      jours += dernierJourMois;
+    }
+    if (mois < 0) {
+      annees--;
+      mois += 12;
+    }
+
+    return { annees, mois, jours };
+  });
+
+  // =======================
+  // TAUX ANCIENNETÉ
+  // =======================
+  const tauxAnciennete = computed(() => {
+    if (!ancienneteDetail.value || ancienneteDetail.value.erreur) return 0;
+    const annees = ancienneteDetail.value.annees;
+    if (annees < 2) return 0;
+    return Math.min(2 + (annees - 2), 25);
+  });
+
+  // =======================
+  // CALCUL SMMBI
+  // =======================
+  const smbbiDetail = computed(() => {
+    // CORRIGÉ : vérifie null explicitement
+    if (salaireMinCat.value === null || salaireMinCat.value === 0) return null;
+
+    const base = Number(salaireMinCat.value);
+    const primeAnciennete =
+      includeAnciennete.value === "oui"
+        ? (base * tauxAnciennete.value) / 100
+        : 0;
+    // CORRIGÉ : renommé gratificationMensuelle pour éviter le conflit de nom
+    const gratificationMensuelle =
+      includeGratification.value === "oui" ? (base * 0.75) / 12 : 0;
+    const total = base + primeAnciennete + gratificationMensuelle;
+
+    return { base, primeAnciennete, gratificationMensuelle, total };
+  });
+
+  // =======================
+  // FORMAT FCFA
+  // =======================
+  const formatMoney = (value) => {
+    return new Intl.NumberFormat("fr-FR").format(Math.round(value)) + " FCFA";
+  };
+
+  // =======================
+  // INDEMNITÉ DE LICENCIEMENT
+  // =======================
+  const tranchesLicenciement = computed(() => {
+    if (
+      !ancienneteDetail.value ||
+      ancienneteDetail.value.erreur ||
+      !smbbiDetail.value ||
+      typeContrat.value !== "cdi"
+    )
+      return [];
+
+    const { annees, mois, jours } = ancienneteDetail.value;
+    const smmbi = smbbiDetail.value.total;
+    const tranches = [];
+
+    if (annees <= 5) {
+      const montant = smmbi * 0.3 * (annees + mois / 12 + jours / 360);
+      tranches.push({ label: "1 à 5 ans", taux: 0.3, montant });
+    } else if (annees <= 10) {
+      tranches.push({
+        label: "1 à 5 ans",
+        taux: 0.3,
+        montant: smmbi * 0.3 * 5,
+      });
+      const an6_10 = annees - 5 + mois / 12 + jours / 360;
+      tranches.push({
+        label: "6 à 10 ans",
+        taux: 0.35,
+        montant: smmbi * 0.35 * an6_10,
+      });
+    } else {
+      tranches.push({
+        label: "1 à 5 ans",
+        taux: 0.3,
+        montant: smmbi * 0.3 * 5,
+      });
+      tranches.push({
+        label: "6 à 10 ans",
+        taux: 0.35,
+        montant: smmbi * 0.35 * 5,
+      });
+      const an10plus = annees - 10 + mois / 12 + jours / 360;
+      tranches.push({
+        label: "> 10 ans",
+        taux: 0.4,
+        montant: smmbi * 0.4 * an10plus,
+      });
+    }
+
+    return tranches;
+  });
+
+  const indemniteLicenciement = computed(() =>
+    tranchesLicenciement.value.reduce((acc, t) => acc + t.montant, 0),
+  );
+
+  // =======================
+  // CONGÉS PAYÉS
+  // =======================
+  const joursMajorationMedaille = ref(0);
+  const joursMajorationEnfant = ref(0);
+
+  const dprJours = computed(() => {
+    if (!dateRetourConge.value || !dateRupture.value) return 0;
+    const debut = new Date(dateRetourConge.value);
+    const fin = new Date(dateRupture.value);
+    if (fin <= debut) return 0;
+    return Math.floor((fin - debut) / (1000 * 60 * 60 * 24));
+  });
+
+  const dprMois = computed(() => dprJours.value / 30);
+  const joursOuvrables = computed(() => Math.ceil(dprMois.value * 2.2));
+  const joursCalendaires = computed(() =>
+    Math.ceil(joursOuvrables.value * 1.25),
+  );
+
+  const majorationAnciennete = computed(() => {
+    if (!ancienneteDetail.value || ancienneteDetail.value.erreur) return 0;
+    const { annees } = ancienneteDetail.value;
+    if (annees < 5) return 0;
+    if (annees < 10) return 1;
+    if (annees < 15) return 2;
+    if (annees < 20) return 3;
+    if (annees < 25) return 5;
+    if (annees < 30) return 7;
+    return 8;
+  });
+
+  const dureeConge = computed(
+    () =>
+      joursCalendaires.value +
+      majorationAnciennete.value +
+      (joursMajorationMedaille.value || 0) +
+      (joursMajorationEnfant.value || 0),
+  );
+
+  const smmbiPeriode = computed(() =>
+    smbbiDetail.value ? smbbiDetail.value.total : 0,
+  );
+  const salaireJournalier = computed(() => smmbiPeriode.value / 30);
+  const indemniteConge = computed(() =>
+    Math.round(salaireJournalier.value * dureeConge.value),
+  );
+
+  // =======================
+  // PRÉAVIS — CORRIGÉ : pas d'arrondi, gestion 8 jours séparément
+  // =======================
+  const dureePreavisMois = computed(() => {
+    if (!categorie.value) return 0;
+    switch (categorie.value) {
+      case "ouvrier":
+      case "employe":
+        return modePaiement.value === "heure" ? 8 / 30 : 1;
+      case "agent_maitrise":
+        return 2;
+      case "cadre":
+        return 3;
+      case "cadre_superieur":
+        return 4;
+      default:
+        return 0;
+    }
+  });
+
+  // Libellé pour l'affichage (conserve "8 jours" pour les horaires)
+  const dureePreavisAffichage = computed(() => {
+    if (!categorie.value) return "";
+    if (
+      (categorie.value === "ouvrier" || categorie.value === "employe") &&
+      modePaiement.value === "heure"
+    ) {
+      return "8 jours";
+    }
+    return `${dureePreavisMois.value} mois`;
+  });
+
+  const indemnitePreavis = computed(() => {
+    if (!smbbiDetail.value || dureePreavisMois.value === 0) return 0;
+    return Math.round(smbbiDetail.value.total * dureePreavisMois.value);
+  });
+
+  // =======================
+  // AGGRAVATION DE PRÉAVIS
+  // =======================
+  const aggravationActive = ref(false);
+
+  const indemniteAggravation = computed(() => {
+    if (!aggravationActive.value || !smbbiDetail.value) return 0;
+    const smmbi = smbbiDetail.value.total;
+    if (modePaiement.value === "mois") return Math.round(smmbi * 2);
+    if (modePaiement.value === "heure") return Math.round(smmbi * 1);
+    return 0;
+  });
+
+  // =======================
+  // GRATIFICATION — CORRIGÉ : renommée gratificationAnnuelle
+  // =======================
+  const typeGratification = ref("");
+  const joursReference = ref(null);
+  const GRATIFICATION_TAUX = 0.75;
+
+  const gratificationAnnuelle = computed(() => {
+    if (!salaireMinCat.value || !typeGratification.value) return 0;
+    if (typeGratification.value === "annuelle") {
+      return Math.round(salaireMinCat.value * GRATIFICATION_TAUX);
+    }
+    if (typeGratification.value === "prorata" && joursReference.value) {
+      return Math.round(
+        salaireMinCat.value * GRATIFICATION_TAUX * (joursReference.value / 360),
+      );
+    }
+    return 0;
+  });
+
+  // =======================
+  // RAPPEL PRIME — CORRIGÉ : répartition correcte des 24 mois
+  // =======================
+  const tranchesRappel = computed(() => {
+    if (!ancienneteDetail.value || ancienneteDetail.value.erreur) return [];
+    const { annees, mois: moisRest } = ancienneteDetail.value;
+    if (annees < 2) return [];
+
+    const result = [];
+    // Tranche année en cours : moisRest mois (ou 12 si moisRest === 0)
+    const moisAnneeCourante = moisRest === 0 ? 12 : moisRest;
+    // Tranche année précédente : complète les 24 mois
+    const moisAnneePrecedente = 24 - moisAnneeCourante;
+
+    const anneePrec = annees - 1;
+    const tauxPrec = Math.min(2 + (anneePrec - 2), 25);
+    if (anneePrec >= 2 && moisAnneePrecedente > 0) {
+      result.push({
+        label: `${anneePrec} ans`,
+        taux: tauxPrec,
+        mois: moisAnneePrecedente,
+        montant: Math.round(
+          (tauxPrec / 100) * salaireMinCat.value * moisAnneePrecedente,
+        ),
+      });
+    }
+
+    const tauxCourant = Math.min(2 + (annees - 2), 25);
+    result.push({
+      label: `${annees} ans`,
+      taux: tauxCourant,
+      mois: moisAnneeCourante,
+      montant: Math.round(
+        (tauxCourant / 100) * salaireMinCat.value * moisAnneeCourante,
+      ),
+    });
+
+    return result;
+  });
+
+  const totalRappel = computed(() =>
+    tranchesRappel.value.reduce((acc, t) => acc + t.montant, 0),
+  );
+
+  // =======================
+  // TOTAL INDEMNITÉS
+  // =======================
+  const totalDroits = computed(() => {
+    return (
+      (indemniteLicenciement.value || 0) +
+      (indemniteConge.value || 0) +
+      (indemnitePreavis.value || 0) +
+      (aggravationActive.value ? indemniteAggravation.value || 0 : 0) +
+      (gratificationAnnuelle.value || 0) +
+      (totalRappel.value || 0)
+    );
+  });
+
+  // =======================
+  // DOMMAGES-INTÉRÊTS LICENCIEMENT ABUSIF — CORRIGÉ : montant encadré
+  // =======================
+  const montantBrutDI = computed(() => {
+    if (
+      !ancienneteDetail.value ||
+      ancienneteDetail.value.erreur ||
+      !smbbiDetail.value
+    )
+      return 0;
+    return smbbiDetail.value.total * ancienneteDetail.value.annees;
+  });
+
+  const plancherLegal = computed(() => {
+    if (!smbbiDetail.value) return 0;
+    return Math.round(smbbiDetail.value.total * 3);
+  });
+
+  const plafondLegal = computed(() => {
+    if (!smbbiDetail.value) return 0;
+    return Math.round(smbbiDetail.value.total * 20);
+  });
+
+  // CORRIGÉ : montant encadré entre plancher et plafond
+  const dommagesInterets = computed(() => {
+    if (!montantBrutDI.value) return 0;
+    return Math.round(
+      Math.min(
+        Math.max(montantBrutDI.value, plancherLegal.value),
+        plafondLegal.value,
+      ),
+    );
+  });
+
+  // =======================
+  // DOMMAGES CNPS
+  // =======================
+  const TAUX_CNPS = 0.077;
+
+  const dureeContratMois = computed(() => {
+    if (!ancienneteDetail.value || ancienneteDetail.value.erreur) return 0;
+    return ancienneteDetail.value.annees * 12 + ancienneteDetail.value.mois;
+  });
+
+  const cotisationMensuelle = computed(() => {
+    if (!smbbiDetail.value) return 0;
+    return Math.round(smbbiDetail.value.total * TAUX_CNPS);
+  });
+
+  const totalDommagesCNPS = computed(
+    () => cotisationMensuelle.value * dureeContratMois.value,
+  );
+
+  // =======================
+  // DOMMAGES CERTIFICAT
+  // =======================
+  const moisCertificat = ref(0);
+
+  const totalCertificat = computed(() => {
+    if (!smbbiDetail.value) return 0;
+    return Math.round(smbbiDetail.value.total * (moisCertificat.value || 0));
+  });
+
+  // =======================
+  // DOMMAGES RELEVÉ NOMINATIF
+  // =======================
+  const moisReleve = ref(0);
+
+  const totalReleve = computed(() => {
+    if (!smbbiDetail.value) return 0;
+    return Math.round(smbbiDetail.value.total * (moisReleve.value || 0));
+  });
+
+  // =======================
+  // TOTAL DOMMAGES
+  // =======================
+  const totalDommages = computed(() => {
+    return (
+      (dommagesInterets.value || 0) +
+      (totalDommagesCNPS.value || 0) +
+      (totalCertificat.value || 0) +
+      (totalReleve.value || 0)
+    );
+  });
+
+  // =======================
+  // TOTAL GÉNÉRAL
+  // =======================
+  const totalGeneral = computed(() => {
+    return Number(totalDroits.value || 0) + Number(totalDommages.value || 0);
+  });
+</script>
+
+<style src="/src/styles/app.css"></style>

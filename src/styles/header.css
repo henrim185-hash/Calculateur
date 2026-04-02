@@ -1,0 +1,24 @@
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 75px;
+        padding: 0 50px;
+        background-color: white;
+        box-shadow: 0 5px 5px #00000020;
+    }
+    .logo a {
+        display: inline-block;
+        font-weight: bold;
+        font-size: 23px;
+        color: black;
+    }
+    .navbar {
+        display: flex;
+        align-items: center;
+    }
+    .navbar a {
+        display: inline-block;
+        padding: 10px 15px;
+        color: #222;
+    }
