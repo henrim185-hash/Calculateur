@@ -1064,7 +1064,7 @@
     <!-- INDEM licenciement -->
     <div
       class="result2"
-      v-else-if="typeContrat === 'cdi' && ancienneteDetail && SMMBI">
+      vgit-if="typeContrat === 'cdi' && ancienneteDetail && SMMBI">
       <h3>Résultats Indemnité de Licenciement</h3>
       <!-- Calcul par tranche -->
       <div class="result-item" v-for="(tranche, i) in tranches" :key="i">
