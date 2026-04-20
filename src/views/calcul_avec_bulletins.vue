@@ -1816,51 +1816,44 @@
     const salaireMinCat = ref(null)
 
     // Générer les tranches de rappel
-    const tranchesRappel = computed(() => {
-        if (!ancienneteDetail.value || ancienneteDetail.value.erreur) return []
+const tranchesRappel = computed(() => {
+    if (!ancienneteDetail.value || ancienneteDetail.value.erreur) return []
 
-        const annees = ancienneteDetail.value.annees
+    const { annees, mois } = ancienneteDetail.value
+    if (annees < 2) return []
 
-        if (annees < 2) return []
+    const result = []
+    let moisRestants = 24 // limite du rappel
 
-        let result = []
+    // On part de l'année actuelle vers le passé
+    for (let i = annees; i >= 2 && moisRestants > 0; i--) {
 
-        // on remonte 2 ans
-        let anneeFin = annees
-        let anneeDebut = annees - 2
+        let moisDansTranche
 
-        let moisRestants = 24
-
-        for (let annee = anneeDebut; annee <= anneeFin; annee++) {
-            if (annee < 2) continue
-
-            let taux = Math.min(2 + (annee - 2), 25)
-
-            // calcul mois par tranche
-            let mois = 12
-
-            // cas première tranche (souvent 11 mois)
-            if (annee === anneeDebut) {
-                mois = 12 - (ancienneteDetail.value.mois || 0)
-            }
-
-            // cas dernière tranche
-            if (annee === anneeFin) {
-                mois = ancienneteDetail.value.mois || 1
-            }
-
-            let montant = (taux / 100) * salaireMinCat.value * mois
-
-            result.push({
-                label: `${annee} ans`,
-                taux,
-                mois,
-                montant: Math.round(montant),
-            })
+        // Année courante
+        if (i === annees) {
+            moisDansTranche = mois === 0 ? 12 : mois
+        } else {
+            moisDansTranche = 12
         }
 
-        return result
-    })
+        // Ne jamais dépasser le reste
+        moisDansTranche = Math.min(moisDansTranche, moisRestants)
+
+        const taux = Math.min(2 + (i - 2), 25)
+
+        result.push({
+            label: `${i} ans`,
+            taux: taux,
+            mois: moisDansTranche,
+            montant: Math.round((taux / 100) * salaireMinCat.value * moisDansTranche),
+        })
+
+        moisRestants -= moisDansTranche
+    }
+
+    return result
+})
 
     // TOTAL
     const totalRappel = computed(() => {

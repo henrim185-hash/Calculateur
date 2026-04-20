@@ -1859,33 +1859,38 @@
     // =======================
     const tranchesRappel = computed(() => {
         if (!ancienneteDetail.value || ancienneteDetail.value.erreur) return []
-        const { annees, mois: moisRest } = ancienneteDetail.value
+
+        const { annees, mois } = ancienneteDetail.value
         if (annees < 2) return []
 
         const result = []
-        // Tranche année en cours : moisRest mois (ou 12 si moisRest === 0)
-        const moisAnneeCourante = moisRest === 0 ? 12 : moisRest
-        // Tranche année précédente : complète les 24 mois
-        const moisAnneePrecedente = 24 - moisAnneeCourante
+        let moisRestants = 24 // limite légale
 
-        const anneePrec = annees - 1
-        const tauxPrec = Math.min(2 + (anneePrec - 2), 25)
-        if (anneePrec >= 2 && moisAnneePrecedente > 0) {
+        // On part de l'année actuelle vers le passé
+        for (let i = annees; i >= 2 && moisRestants > 0; i--) {
+            let moisDansTranche
+
+            // Année en cours
+            if (i === annees) {
+                moisDansTranche = mois === 0 ? 12 : mois
+            } else {
+                moisDansTranche = 12
+            }
+
+            // Sécurité : ne jamais dépasser 12 ni le reste
+            moisDansTranche = Math.min(moisDansTranche, 12, moisRestants)
+
+            const taux = Math.min(2 + (i - 2), 25)
+
             result.push({
-                label: `${anneePrec} ans`,
-                taux: tauxPrec,
-                mois: moisAnneePrecedente,
-                montant: Math.round((tauxPrec / 100) * salaireMinCat.value * moisAnneePrecedente),
+                label: `${i} ans`,
+                taux: taux,
+                mois: moisDansTranche,
+                montant: Math.round((taux / 100) * salaireMinCat.value * moisDansTranche),
             })
-        }
 
-        const tauxCourant = Math.min(2 + (annees - 2), 25)
-        result.push({
-            label: `${annees} ans`,
-            taux: tauxCourant,
-            mois: moisAnneeCourante,
-            montant: Math.round((tauxCourant / 100) * salaireMinCat.value * moisAnneeCourante),
-        })
+            moisRestants -= moisDansTranche
+        }
 
         return result
     })
