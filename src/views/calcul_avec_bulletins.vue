@@ -336,7 +336,10 @@
             <div class="section-container preavis-box">
                 <h3>C. INDEMNITÉ COMPENSATRICE DE PRÉAVIS</h3>
 
-                <p class="section-hint">Veuillez saisir la durée du préavis (en mois) et le Salaire Moyen Mensuel (SMMBI)</p>
+                <p class="section-hint">
+                    Veuillez saisir la durée du préavis (en mois) et le Salaire Moyen Mensuel
+                    (SMMBI)
+                </p>
 
                 <!-- INPUT DURÉE -->
                 <div class="input-section">
@@ -416,7 +419,13 @@
                         <div>
                             Mode de paiement :
                             <span class="value">
-                                {{ modePaiement === 'mois' ? 'Mensualisé' : 'Non indiqué' }}
+                                {{
+                                    modePaiement === 'mois'
+                                        ? 'Mensualisé'
+                                        : modePaiement === 'heure'
+                                          ? 'Horaire'
+                                          : 'Non indiqué'
+                                }}
                             </span>
                         </div>
                     </div>
@@ -1357,6 +1366,7 @@
         </div>
         <!-- DOMMAGE CNPS -->
         <div class="result-box result2" v-if="ancienneteDetail && SMMBI">
+            <h3>Résultats Dommages-intérêts non-déclaration à la CNPS</h3>
             <div class="result-item">
                 <!-- <div class="icon">✓</div> -->
                 <div>SMMBI (base de cotisation) :</div>
@@ -1388,6 +1398,7 @@
         </div>
         <!-- DOMMAGE  -->
         <div class="result-box result2" v-if="moisCertificat > 0 && SMMBI">
+            <h3>Résultats Dommages-intérêts non-délivrance du certificat de travail</h3>
             <div class="result-item">
                 <div>SMMBI :</div>
                 <span class="value"> {{ SMMBI.toLocaleString('fr-FR') }} FCFA </span>
@@ -1406,6 +1417,7 @@
         <!-- DOMMAGE DERNIER -->
 
         <div class="result-box result2" v-if="moisReleve > 0 && SMMBI">
+            <h3>Résultats Dommages-intérêts non-délivrance du relevé nominatif de salaire</h3>
             <div class="result-item">
                 <div>SMMBI :</div>
                 <span class="value"> {{ SMMBI.toLocaleString('fr-FR') }} FCFA </span>
@@ -1748,7 +1760,7 @@
 
     const indemniteConge = computed(() => {
         const montant = salaireJournalier.value * dureeConge.value
-        return Math.round(montant) 
+        return Math.round(montant)
     })
 
     /* =========================
