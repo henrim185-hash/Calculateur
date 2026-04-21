@@ -1017,25 +1017,7 @@
     </div>
 
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <nav>
-            <ul>
-                <li><a href="#info-salarie">Informations du salarié</a></li>
-                <li><a href="#salaires">SMMBI reconstitué</a></li>
-                <li><a href="#indemnite-licenciement">Indemnité licenciement</a></li>
-                <li><a href="#conges-payes">Congés payés</a></li>
-                <li><a href="#preavis">Indemnité préavis</a></li>
-                <li><a href="#aggravation-preavis">Aggravation préavis</a></li>
-                <li><a href="#gratification">Gratification</a></li>
-                <li><a href="#rappel-prime">Rappel prime ancienneté</a></li>
-                <li><a href="#recapitulatif">Récapitulatif Indemnités</a></li>
-                <li><a href="#dommages-licenciement-abusif">Licenciement abusif</a></li>
-                <li><a href="#dommages-cnps">Dommages CNPS</a></li>
-                <li><a href="#dommages-certificat">Certificat de travail</a></li>
-                <li><a href="#dommages-releve">Relevé nominatif</a></li>
-            </ul>
-        </nav>
-    </aside>
+     <Aside />
 
     <!-- CONTENU PDF (caché visuellement) -->
     <div id="pdf-content" class="pdf-container">
@@ -1580,6 +1562,7 @@
 <script setup>
     import { ref, computed } from 'vue'
     import Header from '@/components/Header.vue'
+    import Aside from '@/components/Aside.vue'
     import html2pdf from 'html2pdf.js'
 
     // =======================
@@ -1802,9 +1785,6 @@
     // =======================
     // PREAVIS
     // =======================
-    // =======================
-    // PRÉAVIS (MANUEL EN MOIS)
-    // =======================
 
     const dureePreavisInput = ref(null)
 
@@ -1901,13 +1881,13 @@
     // TOTAL INDEMNITÉS
     // =======================
     const totalDroits = computed(() => {
-        return (
+        return Math.round(
             (indemniteLicenciement.value || 0) +
-            (indemniteConge.value || 0) +
-            (indemnitePreavis.value || 0) +
-            (aggravationActive.value ? indemniteAggravation.value || 0 : 0) +
-            (gratificationAnnuelle.value || 0) +
-            (totalRappel.value || 0)
+                (indemniteConge.value || 0) +
+                (indemnitePreavis.value || 0) +
+                (aggravationActive.value ? indemniteAggravation.value || 0 : 0) +
+                (gratificationAnnuelle.value || 0) +
+                (totalRappel.value || 0),
         )
     })
 
@@ -1978,11 +1958,11 @@
     // TOTAL DOMMAGES
     // =======================
     const totalDommages = computed(() => {
-        return (
+        return Math.round(
             (dommagesInterets.value || 0) +
-            (totalDommagesCNPS.value || 0) +
-            (totalCertificat.value || 0) +
-            (totalReleve.value || 0)
+                (totalDommagesCNPS.value || 0) +
+                (totalCertificat.value || 0) +
+                (totalReleve.value || 0),
         )
     })
 
@@ -1990,7 +1970,7 @@
     // TOTAL GÉNÉRAL
     // =======================
     const totalGeneral = computed(() => {
-        return Number(totalDroits.value || 0) + Number(totalDommages.value || 0)
+        return Math.round(Number(totalDroits.value || 0) + Number(totalDommages.value || 0))
     })
 </script>
 

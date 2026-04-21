@@ -1,1 +1,42 @@
 
+    // =======================
+    // CONGÉS PAYÉS
+    // =======================
+    const joursMajorationMedaille = ref(0)
+    const joursMajorationEnfant = ref(0)
+
+    const dprJours = computed(() => {
+        if (!dateRetourConge.value || !dateRupture.value) return 0
+        const debut = new Date(dateRetourConge.value)
+        const fin = new Date(dateRupture.value)
+        if (fin <= debut) return 0
+        return Math.floor((fin - debut) / (1000 * 60 * 60 * 24))
+    })
+
+    const dprMois = computed(() => dprJours.value / 30)
+    const joursOuvrables = computed(() => Math.ceil(dprMois.value * 2.2))
+    const joursCalendaires = computed(() => Math.ceil(joursOuvrables.value * 1.25))
+
+    const majorationAnciennete = computed(() => {
+        if (!ancienneteDetail.value || ancienneteDetail.value.erreur) return 0
+        const { annees } = ancienneteDetail.value
+        if (annees < 5) return 0
+        if (annees < 10) return 1
+        if (annees < 15) return 2
+        if (annees < 20) return 3
+        if (annees < 25) return 5
+        if (annees < 30) return 7
+        return 8
+    })
+
+    const dureeConge = computed(
+        () =>
+            joursCalendaires.value +
+            majorationAnciennete.value +
+            (joursMajorationMedaille.value || 0) +
+            (joursMajorationEnfant.value || 0),
+    )
+
+    const smmbiPeriode = computed(() => (smbbiDetail.value ? smbbiDetail.value.total : 0))
+    const salaireJournalier = computed(() => smmbiPeriode.value / 30)
+    const indemniteConge = computed(() => Math.round(salaireJournalier.value * dureeConge.value))

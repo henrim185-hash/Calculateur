@@ -953,25 +953,10 @@
             <button @click="genererPDF" class="btn-pdf">Télécharger le PDF</button>
         </div>
     </div>
-    <aside class="sidebar">
-        <nav>
-            <ul>
-                <li><a href="#info-salarie">Informations du salarié</a></li>
-                <li><a href="#salaires">Salaires 12 mois</a></li>
-                <li><a href="#indemnite-licenciement">Indemnité licenciement</a></li>
-                <li><a href="#conges-payes">Congés payés</a></li>
-                <li><a href="#preavis">Indemnité préavis</a></li>
-                <li><a href="#aggravation-preavis">Aggravation préavis</a></li>
-                <li><a href="#gratification">Gratification</a></li>
-                <li><a href="#rappel-prime">Rappel prime ancienneté</a></li>
-                <li><a href="#recapitulatif">Récapitulatif Indemnités</a></li>
-                <li><a href="#dommages-licenciement-abusif">Licenciement abusif</a></li>
-                <li><a href="#dommages-cnps">Dommages CNPS</a></li>
-                <li><a href="#dommages-certificat">Certificat de travail</a></li>
-                <li><a href="#dommages-releve">Relevé nominatif</a></li>
-            </ul>
-        </nav>
-    </aside>
+
+    <!-- ASIDE -->
+     
+     <Aside />
 
     <div id="pdf-content" class="pdf-container">
         <div
@@ -1533,6 +1518,7 @@
 <script setup>
     import { ref, computed } from 'vue'
     import Header from '@/components/Header.vue'
+    import Aside from '@/components/Aside.vue'
     import html2pdf from 'html2pdf.js'
 
     const categorie = ref('')
