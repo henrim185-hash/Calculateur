@@ -1,5 +1,5 @@
 <template>
-    <header>
+    <header id="header">
         <div class="logo">
             <router-link to="/" class="logo-link" exact-active-class="logo-active">
                 Calculator
@@ -13,7 +13,7 @@
         <div class="navbar" :class="{ active: menuOpen }">
             <router-link to="/" @click="closeMenu">Calcul avec bulletins</router-link>
             <router-link to="/calcul_sans_bulletins" @click="closeMenu"
-                >Calculs sans bulletins</router-link
+                >Calcul sans bulletins</router-link
             >
             <router-link to="/formules" @click="closeMenu">Formules de calcules</router-link>
         </div>

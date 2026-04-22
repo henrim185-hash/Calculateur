@@ -3,7 +3,7 @@
     <div class="container">
         <!-- TITRES -->
         <div class="titles">
-            <h1>Calcul sans bulletins</h1>
+            <h1>CALCUL SANS BULLETINS</h1>
             <p>
                 Renseignez les informations du salarié pour calculer l'ensemble des droits à la
                 rupture

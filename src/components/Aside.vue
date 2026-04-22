@@ -13,6 +13,7 @@
     <aside class="sidebar" :class="{ open: isOpen }">
         <nav>
             <ul>
+                <li><a href="#header" @click="isOpen = false">Entête</a></li>
                 <li><a href="#info-salarie" @click="isOpen = false">Informations du salarié</a></li>
                 <li><a href="#salaires" @click="isOpen = false">Salaires 12 mois</a></li>
                 <li>
