@@ -16,14 +16,23 @@
                 >Calcul sans bulletins</router-link
             >
             <router-link to="/formules" @click="closeMenu">Formules de calcules</router-link>
+            <div class="switcher">
+                <span></span>
+                <label class="switch">
+                    <input type="checkbox" @change="handleToggle" />
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
     </header>
 </template>
 
 <script setup>
-    import { ref } from 'vue'
+    import { ref, defineEmits } from 'vue'
 
     const menuOpen = ref(false)
+
+    const emit = defineEmits(['toggle-all'])
 
     const toggleMenu = () => {
         menuOpen.value = !menuOpen.value
@@ -31,6 +40,10 @@
 
     const closeMenu = () => {
         menuOpen.value = false
+    }
+
+    const handleToggle = event => {
+        emit('toggle-all', event.target.checked)
     }
 </script>
 
@@ -52,7 +65,7 @@
         font-weight: bold;
         color: black !important;
         text-decoration: none;
-        transition: .3s ease-in-out;
+        transition: 0.3s ease-in-out;
     }
 
     /* NAVBAR DESKTOP */
@@ -122,9 +135,73 @@
         background: transparent !important;
         color: black !important;
     }
-        @media (max-width: 1385px) {
-            .logo a {
-                margin-left: 50px;
-            }
+    @media (max-width: 1385px) {
+        .logo a {
+            margin-left: 50px;
         }
+    }
+
+    /* The switch - the box around the slider */
+    .switch {
+        font-size: 12px;
+        position: relative;
+        display: inline-block;
+        width: 3.5em;
+        height: 2em;
+    }
+
+    /* Hide default HTML checkbox */
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    /* The slider */
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: white;
+        border-radius: 50px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+
+    .slider:before {
+        position: absolute;
+        content: '';
+        height: 1.4em;
+        width: 1.4em;
+        right: 0.3em;
+        bottom: 0.3em;
+        transform: translateX(150%);
+        background-color: #59d102;
+        border-radius: inherit;
+        transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+
+    .slider:after {
+        position: absolute;
+        content: '';
+        height: 1.4em;
+        width: 1.4em;
+        left: 0.3em;
+        bottom: 0.3em;
+        background-color: #cccccc;
+        border-radius: inherit;
+        transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
+    }
+
+    .switch input:focus + .slider {
+        box-shadow: 0 0 1px #59d102;
+    }
+
+    .switch input:checked + .slider:before {
+        transform: translateY(0);
+    }
+
+    .switch input:checked + .slider::after {
+        transform: translateX(-150%);
+    }
 </style>

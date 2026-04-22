@@ -1,5 +1,5 @@
 <template>
-    <Header />
+    <Header @toggle-all="handleToggleAll" />
     <div class="container">
         <!-- Titres -->
         <div class="titles">
@@ -938,7 +938,9 @@
                         <label>Nombre de mois accordé</label>
                         <input type="number" v-model.number="moisReleve" placeholder="Ex: 3" />
                     </div>
-                    <div class="form-group" style="margin-top: 15px !important; margin-bottom: 0 !important">
+                    <div
+                        class="form-group"
+                        style="margin-top: 15px !important; margin-bottom: 0 !important">
                         <label>Afficher Résultats ?</label>
                         <select v-model="afficher.dommages.releve">
                             <option :value="false">NON</option>
@@ -948,7 +950,9 @@
                 </div>
 
                 <!-- RESULTATS -->
-                <div class="result-box result2" v-if="moisReleve > 0 && SMMBI && afficher.dommages.releve">
+                <div
+                    class="result-box result2"
+                    v-if="moisReleve > 0 && SMMBI && afficher.dommages.releve">
                     <div class="result-item">
                         <div>SMMBI :</div>
                         <span class="value"> {{ SMMBI.toLocaleString('fr-FR') }} FCFA </span>
@@ -1642,6 +1646,19 @@
     import Header from '@/components/Header.vue'
     import Aside from '@/components/Aside.vue'
     import html2pdf from 'html2pdf.js'
+
+    // AAFICHER DIRECTEMENT LES RESULTATS
+    const handleToggleAll = value => {
+        Object.keys(afficher.value.indemnites).forEach(key => {
+            afficher.value.indemnites[key] = value
+        })
+
+        Object.keys(afficher.value.dommages).forEach(key => {
+            afficher.value.dommages[key] = value
+        })
+
+        afficher.value.recapitulatif = value
+    }
 
     // AFFICHER RESULTATS
 
