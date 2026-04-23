@@ -443,10 +443,12 @@
         <section id="aggravation-preavis">
             <div class="section-container aggravation-box">
                 <h3>D.L’INDEMNITÉ DE L'AGGRAVATION DE PRÉAVIS</h3>
+
                 <p class="section-hint">
                     Veuillez indiquer le Mode de paiement et les Salaires des 12 derniers mois
                     (SBMMI)
                 </p>
+
                 <div class="input-section">
                     <div class="form-group">
                         <label>Afficher Résultats ?</label>
@@ -460,8 +462,8 @@
                 <!-- Résultat -->
                 <div class="result-box result2" v-if="afficher.indemnites.aggravationPreavis">
                     <h3>Résultat Indemnité de l'aggravation de préavis</h3>
+
                     <div class="result-item">
-                        <!-- <div class="icon">✓</div> -->
                         <div>
                             Mode de paiement :
                             <span class="value">
@@ -477,7 +479,6 @@
                     </div>
 
                     <div class="result-item">
-                        <!-- <div class="icon">✓</div> -->
                         <div>
                             <strong>INDEMNITÉ DE L'AGGRAVATION : </strong>
                             <span class="value">
@@ -491,6 +492,7 @@
                     <p class="legal-text">
                         Article 36 de la Convention Collective Interprofessionnelle
                     </p>
+
                     <!-- Méthode -->
                     <h4 style="margin: 20px 0 10px 0">Méthodes de calcul</h4>
                     <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
@@ -500,7 +502,6 @@
                 </div>
             </div>
         </section>
-
         <!-- GRATIFICATION -->
         <section id="gratification">
             <div class="section-container gratification-box">
@@ -707,7 +708,7 @@
                     </div>
 
                     <!-- Indemnité d'aggravation de préavis -->
-                    <div class="result-item" v-if="aggravationActive && indemniteAggravation > 0">
+                    <div class="result-item" v-if="indemniteAggravation > 0">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Indemnité d'aggravation de préavis :
@@ -1085,6 +1086,7 @@
     <Aside />
 
     <div id="pdf-content" class="pdf-container">
+        <!-- infos salarié -->
         <div
             class="result-box"
             v-if="
@@ -1123,6 +1125,7 @@
         </div>
         <!-- anciennete -->
         <div class="result-box" v-if="ancienneteDetail">
+            <h3>Ancienneté calculé</h3>
             <div class="result-item">
                 <!-- <div class="icon">✓</div> -->
                 <div>
@@ -1278,7 +1281,7 @@
         </div>
         <!-- AGGRAVATION -->
 
-        <div class="result-box result2" v-if="aggravationActive">
+        <div class="result-box result2" v-if="indemniteAggravation > 0">
             <h3>Résultat Indemnité de l'aggravation de préavis</h3>
             <div class="result-item">
                 <!-- <div class="icon">✓</div> -->
@@ -1364,78 +1367,74 @@
         <!-- RECAP -->
         <div class="section-container recap-box">
             <h2 style="text-align: center">RÉCAPITULATIF TOTAL DES INDEMNITÉS</h2>
+
             <div style="margin-top: 20px">
-                <!-- Indemnité de licenciement -->
-                <div class="result-item" v-if="indemnite > 0">
-                    <!-- <div class="icon">✓</div> -->
+                <div class="result-item" v-if="(indemnite || 0) > 0">
                     <div>
                         Indemnité de licenciement :
-                        <span class="value"
-                            >{{
-                                indemnite.toLocaleString('fr-FR', {
+                        <span class="value">
+                            {{
+                                (indemnite || 0).toLocaleString('fr-FR', {
                                     maximumFractionDigits: 0,
                                 })
                             }}
-                            FCFA</span
-                        >
+                            FCFA
+                        </span>
                     </div>
                 </div>
 
-                <!-- Indemnité compensatrice de congés payés -->
-                <div class="result-item" v-if="indemniteConge > 0">
-                    <!-- <div class="icon">✓</div> -->
+                <div class="result-item" v-if="(indemniteConge || 0) > 0">
                     <div>
                         Indemnité compensatrice de congés payés :
-                        <span class="value">{{ indemniteConge.toLocaleString('fr-FR') }} FCFA</span>
+                        <span class="value">
+                            {{ (indemniteConge || 0).toLocaleString('fr-FR') }} FCFA
+                        </span>
                     </div>
                 </div>
 
-                <!-- Indemnité compensatrice de préavis -->
-                <div class="result-item" v-if="indemnitePreavis > 0">
-                    <!-- <div class="icon">✓</div> -->
+                <div class="result-item" v-if="(indemnitePreavis || 0) > 0">
                     <div>
                         Indemnité compensatrice de préavis :
-                        <span class="value"
-                            >{{ indemnitePreavis.toLocaleString('fr-FR') }} FCFA</span
-                        >
+                        <span class="value">
+                            {{ (indemnitePreavis || 0).toLocaleString('fr-FR') }} FCFA
+                        </span>
                     </div>
                 </div>
 
-                <!-- Indemnité d'aggravation de préavis -->
-                <div class="result-item" v-if="aggravationActive && indemniteAggravation > 0">
-                    <!-- <div class="icon">✓</div> -->
+                <div class="result-item" v-if="(indemniteAggravation || 0) > 0">
                     <div>
                         Indemnité d'aggravation de préavis :
-                        <span class="value"
-                            >{{ indemniteAggravation.toLocaleString('fr-FR') }} FCFA</span
-                        >
+                        <span class="value">
+                            {{ (indemniteAggravation || 0).toLocaleString('fr-FR') }} FCFA
+                        </span>
                     </div>
                 </div>
 
-                <!-- Gratification -->
-                <div class="result-item" v-if="gratification > 0">
-                    <!-- <div class="icon">✓</div> -->
+                <div class="result-item" v-if="(gratification || 0) > 0">
                     <div>
                         Gratification :
-                        <span class="value">{{ gratification.toLocaleString('fr-FR') }} FCFA</span>
+                        <span class="value">
+                            {{ (gratification || 0).toLocaleString('fr-FR') }} FCFA
+                        </span>
                     </div>
                 </div>
 
-                <!-- Rappel prime d'ancienneté -->
-                <div class="result-item" v-if="totalRappel > 0">
-                    <!-- <div class="icon">✓</div> -->
+                <div class="result-item" v-if="(totalRappel || 0) > 0">
                     <div>
                         Rappel prime d'ancienneté :
-                        <span class="value">{{ totalRappel.toLocaleString('fr-FR') }} FCFA</span>
+                        <span class="value">
+                            {{ (totalRappel || 0).toLocaleString('fr-FR') }} FCFA
+                        </span>
                     </div>
                 </div>
 
-                <!-- TOTAL GÉNÉRAL -->
+                <!-- TOTAL -->
                 <div class="result-item highlight">
-                    <!-- <div class="icon">✓</div> -->
                     <div>
                         <strong>TOTAL GÉNÉRAL DES DROITS : </strong>
-                        <span class="value">{{ totalDroits.toLocaleString('fr-FR') }} FCFA</span>
+                        <span class="value">
+                            {{ (totalDroits || 0).toLocaleString('fr-FR') }} FCFA
+                        </span>
                     </div>
                 </div>
             </div>
@@ -1942,8 +1941,9 @@
     // ⚠️ récupère ton mode de paiement déjà existant
     const modePaiement = ref('') // "mois" ou "heure"
 
+    // Calcul indemnité
     const indemniteAggravation = computed(() => {
-        if (!aggravationActive.value) return 0
+        if (!afficher.value.indemnites.aggravationPreavis) return 0
 
         if (modePaiement.value === 'mois') {
             return Math.round(SMMBI.value * 2)
@@ -2031,7 +2031,7 @@
             (indemnite.value || 0) +
             (indemniteConge.value || 0) +
             (indemnitePreavis.value || 0) +
-            (aggravationActive.value ? indemniteAggravation.value || 0 : 0) +
+            (indemniteAggravation.value || 0) +
             (gratification.value || 0) +
             (totalRappel.value || 0)
         )
