@@ -167,6 +167,16 @@
                     Indiquer : Type contrat, les Dates d'embauches et de rupture
                 </p>
 
+                <div class="input-section">
+                    <div class="form-group">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.indemnites.licenciement">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- CAS NON APPLICABLE -->
                 <div v-if="typeContrat !== 'cdi'" class="info-message">
                     ⚠ L'indemnité de licenciement s'applique uniquement aux contrats CDI.
@@ -178,7 +188,8 @@
                         typeContrat === 'cdi' &&
                         ancienneteDetail &&
                         !ancienneteDetail.erreur &&
-                        smbbiDetail
+                        smbbiDetail &&
+                        afficher.indemnites.licenciement
                     "
                     class="result2">
                     <h3>Résultats Indemnité de Licenciement</h3>
@@ -256,8 +267,19 @@
                             placeholder="0" />
                     </div>
 
+                    <div
+                        class="form-group"
+                        style="margin-top: 15px !important; margin-bottom: 0 !important">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.indemnites.conges">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
+                        </select>
+                    </div>
                     <!-- RESULTATS -->
-                    <div v-if="dprJours > 0 && smbbiDetail" class="result-box result2">
+                    <div
+                        v-if="dprJours > 0 && smbbiDetail && afficher.indemnites.conges"
+                        class="result-box result2">
                         <h3>Résultats Congés Payés</h3>
 
                         <div class="result-item">
@@ -355,10 +377,21 @@
                             v-model="dureePreavisInput"
                             placeholder="Ex: 1, 2, 3..." />
                     </div>
+                    <div
+                        class="form-group"
+                        style="margin-top: 15px !important; margin-bottom: 0 !important">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.indemnites.preavis">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- RÉSULTATS -->
-                <div class="result-box result2" v-if="dureePreavisMois > 0 && smbbiDetail">
+                <div
+                    class="result-box result2"
+                    v-if="dureePreavisMois > 0 && smbbiDetail && afficher.indemnites.preavis">
                     <h3>Résultats Indemnité compensatrice de préavis</h3>
 
                     <div class="result-item">
@@ -379,7 +412,7 @@
 
                     <div class="result-item">
                         <div>
-                            <strong>INDEMNITÉ COMPENSATRICE DE PRÉAVIS :</strong>
+                            <strong>INDEMNITÉ COMPENSATRICE DE PRÉAVIS : </strong>
                             <span class="value">
                                 {{ indemnitePreavis.toLocaleString('fr-FR') }} FCFA
                             </span>
@@ -403,17 +436,21 @@
                 <p class="section-hint">Indiquer: le Mode de paiement et SMMBI reconstitué</p>
 
                 <div class="input-section">
-                    <div class="form-group">
-                        <label style="margin-bottom: 10px">Cas d'application</label>
-                        <select v-model="aggravationActive">
-                            <option :value="false">Non</option>
-                            <option :value="true">Oui (rupture pendant / autour du congé)</option>
+                    <div
+                        class="form-group"
+                        style="margin-top: 15px !important; margin-bottom: 0 !important">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.indemnites.aggravationPreavis">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- Résultat -->
-                <div class="result-box result2" v-if="aggravationActive && smbbiDetail">
+                <div
+                    class="result-box result2"
+                    v-if="smbbiDetail && afficher.indemnites.aggravationPreavis">
                     <h3>Résultat Indemnité de l'aggravation de préavis</h3>
 
                     <div class="result-item">
@@ -507,80 +544,103 @@
         <section id="rappel-prime">
             <div class="section-container indem-licenciement">
                 <h3>F. RAPPEL DE PRIME D'ANCIENNETÉ</h3>
+
                 <p class="section-hint">
                     Indiquer: Dates d'embauche et de rupture, Salaire minima conventionnel
                     catégoriel
                 </p>
+
+                <!-- TOGGLE -->
+                <div class="input-section">
+                    <div class="form-group">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.indemnites.rappelPrime">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
+                        </select>
+                    </div>
+                </div>
 
                 <!-- ERREUR -->
                 <div v-if="ancienneteDetail?.erreur" class="info-message">
                     ⚠ {{ ancienneteDetail.erreur }}
                 </div>
 
-                <!-- RESULTAT -->
+                <!-- CONDITION PRINCIPALE -->
                 <div
-                    v-else-if="dateEmbauche && dateRupture && salaireMinCat"
+                    v-else-if="
+                        afficher.indemnites.rappelPrime &&
+                        dateEmbauche &&
+                        dateRupture &&
+                        salaireMinCat &&
+                        ancienneteDetail
+                    "
                     class="result-box result2">
-                    <!-- NON ELIGIBLE -->
-                    <div
-                        v-if="ancienneteDetail && ancienneteDetail.annees < 2"
-                        class="info-message">
+                    <!-- NON ÉLIGIBLE -->
+                    <div v-if="ancienneteDetail.annees < 2" class="info-message">
                         ⚠ Ancienneté < 2 ans → pas de rappel.
                     </div>
 
                     <!-- RESULTAT -->
-                    <div v-else-if="ancienneteDetail">
+                    <div v-else>
                         <h3>Résultats Rappel de Prime d'Ancienneté</h3>
 
+                        <!-- SALAIRE -->
                         <div class="result-item">
                             <div>
                                 Salaire minimum :
-                                <span class="value"
-                                    >{{ salaireMinCat.toLocaleString('fr-FR') }} FCFA</span
-                                >
+                                <span class="value">
+                                    {{ salaireMinCat.toLocaleString('fr-FR') }} FCFA
+                                </span>
                             </div>
                         </div>
 
+                        <!-- ANCIENNETE -->
                         <div class="result-item">
                             <div>
                                 Ancienneté :
-                                <span class="value">{{ ancienneteDetail.annees }} ans</span>
+                                <span class="value"> {{ ancienneteDetail.annees }} ans </span>
                             </div>
                         </div>
 
+                        <!-- DETAIL TRANCHES -->
                         <h4 style="margin: 20px 0">Détail par tranche</h4>
+
                         <div v-for="(item, i) in tranchesRappel" :key="i" class="result-item">
                             <div>
                                 {{ item.label }} → {{ item.taux }}% × {{ item.mois }} mois :
-                                <span class="value"
-                                    >{{ item.montant.toLocaleString('fr-FR') }} FCFA</span
-                                >
+                                <span class="value">
+                                    {{ item.montant.toLocaleString('fr-FR') }} FCFA
+                                </span>
                             </div>
                         </div>
 
+                        <!-- TOTAL -->
                         <div class="result-item highlight">
                             <div>
                                 <strong>TOTAL RAPPEL : </strong>
-                                <span class="value"
-                                    >{{ totalRappel.toLocaleString('fr-FR') }} FCFA</span
-                                >
+                                <span class="value">
+                                    {{ totalRappel.toLocaleString('fr-FR') }} FCFA
+                                </span>
                             </div>
                         </div>
+
+                        <!-- BASE LEGALE -->
+                        <h4 class="legal-title">Base légale</h4>
+                        <p class="legal-text">
+                            Article 55 de la Convention Collective Interprofessionnelle (CCI)
+                        </p>
+
+                        <!-- METHODE -->
+                        <h4 style="margin: 20px 0 10px 0">Méthode de calcul</h4>
+                        <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
+                            ‣ Le rappel est calculé sur les 2 dernières années (24 mois).<br />
+                            ‣ Le taux de la prime évolue chaque année selon l'ancienneté.<br />
+                            ‣ Chaque période est calculée séparément (année par année).<br />
+                            ‣ Montant = Taux × Salaire minimum × nombre de mois.<br />
+                            ‣ Le total correspond à la somme des montants de chaque tranche.
+                        </p>
                     </div>
-
-                    <h4 class="legal-title">Base légale</h4>
-                    <p class="legal-text">
-                        Article 55 de la Convention Collective Interprofessionnelle (CCI)
-                    </p>
-
-                    <h4 style="margin: 20px 0 10px 0">Méthode de calcul</h4>
-                    <p style="font-size: 0.9rem; color: #555; line-height: 1.4">
-                        ‣ Le rappel est calculé sur les 2 dernières années (24 mois).<br />
-                        ‣ Le taux de la prime évolue chaque année selon l'ancienneté.<br />
-                        ‣ Chaque période est calculée séparément (année par année).<br />
-                        ‣ Montant = Taux × Salaire minimum × nombre de mois.<br />
-                        ‣ Le total correspond à la somme des montants de chaque tranche.
-                    </p>
                 </div>
             </div>
         </section>
@@ -622,7 +682,9 @@
                         </div>
                     </div>
 
-                    <div class="result-item" v-if="aggravationActive && indemniteAggravation > 0">
+                    <div
+                        class="result-item"
+                        v-if="afficher.indemnites.aggravationPreavis && indemniteAggravation > 0">
                         <div>
                             Indemnité d'aggravation de préavis :
                             <span class="value"
@@ -668,13 +730,27 @@
                 <p class="section-hint">
                     Indiquer : Type de contrat, Dates d'embauche et de rupture, SMMBI reconstitué
                 </p>
+                <div class="input-section">
+                    <div class="form-group">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.dommages.licenciementAbusif">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
+                        </select>
+                    </div>
+                </div>
 
                 <div v-if="typeContrat !== 'cdi'" class="info-message">
                     ⚠ Les dommages-intérêts s'appliquent uniquement aux CDI.
                 </div>
 
                 <div
-                    v-else-if="ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail"
+                    v-else-if="
+                        ancienneteDetail &&
+                        !ancienneteDetail.erreur &&
+                        smbbiDetail &&
+                        afficher.dommages.licenciementAbusif
+                    "
                     class="result-box result2">
                     <h3>Résultats Dommages-Intérêts pour licenciement abusif</h3>
 
@@ -746,10 +822,23 @@
                 <p class="section-hint">
                     Indiquer: Dates d'embauche et de rupture, SMMBI reconstitué
                 </p>
-
+                <div class="input-section">
+                    <div class="form-group">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.dommages.cnps">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
+                        </select>
+                    </div>
+                </div>
                 <div
                     class="result-box result2"
-                    v-if="ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail">
+                    v-if="
+                        ancienneteDetail &&
+                        !ancienneteDetail.erreur &&
+                        smbbiDetail &&
+                        afficher.dommages.cnps
+                    ">
                     <h3>Résultats Dommages CNPS</h3>
 
                     <div class="result-item">
@@ -819,9 +908,20 @@
                         <label>Nombre de mois accordé</label>
                         <input type="number" v-model.number="moisCertificat" placeholder="Ex: 3" />
                     </div>
+                    <div
+                        class="form-group"
+                        style="margin-top: 15px !important; margin-bottom: 0 !important">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.dommages.certificat">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="result-box result2" v-if="moisCertificat > 0 && smbbiDetail">
+                <div
+                    class="result-box result2"
+                    v-if="moisCertificat > 0 && smbbiDetail && afficher.dommages.certificat">
                     <h3>Résultats Dommages Certificat</h3>
 
                     <div class="result-item">
@@ -873,9 +973,18 @@
                         <label>Nombre de mois accordé</label>
                         <input type="number" v-model.number="moisReleve" placeholder="Ex: 3" />
                     </div>
+                    <div
+                        class="form-group"
+                        style="margin-top: 15px !important; margin-bottom: 0 !important">
+                        <label>Afficher Résultats ?</label>
+                        <select v-model="afficher.dommages.releve">
+                            <option :value="false">NON</option>
+                            <option :value="true">OUI</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="result-box result2" v-if="moisReleve > 0 && smbbiDetail">
+                <div class="result-box result2" v-if="moisReleve > 0 && smbbiDetail && afficher.dommages.releve">
                     <h3>Résultats Dommages Relevé Nominatif</h3>
 
                     <div class="result-item">
@@ -1017,7 +1126,7 @@
     </div>
 
     <!-- SIDEBAR -->
-     <Aside />
+    <Aside />
 
     <!-- CONTENU PDF (caché visuellement) -->
     <div id="pdf-content" class="pdf-container">
@@ -1226,7 +1335,9 @@
             </div>
         </div>
         <!-- AGGRAVATION -->
-        <div class="result-box result2" v-if="aggravationActive && smbbiDetail">
+        <div
+            class="result-box result2"
+            v-if="afficher.indemnites.aggravationPreavis && smbbiDetail">
             <h3>Résultat Indemnité de l'aggravation de préavis</h3>
 
             <div class="result-item">
@@ -1293,7 +1404,9 @@
                     </div>
                 </div>
 
-                <div class="result-item" v-if="aggravationActive && indemniteAggravation > 0">
+                <div
+                    class="result-item"
+                    v-if="afficher.indemnites.aggravationPreavis && indemniteAggravation > 0">
                     <div>
                         Indemnité d'aggravation de préavis :
                         <span class="value"
@@ -1565,6 +1678,26 @@
     import Aside from '@/components/Aside.vue'
     import html2pdf from 'html2pdf.js'
 
+    // AFFICHER RESULTAT
+
+    const afficher = ref({
+        indemnites: {
+            licenciement: false,
+            conges: false,
+            preavis: false,
+            aggravationPreavis: false,
+            gratification: false,
+            rappelPrime: false,
+        },
+        recapitulatif: false,
+        dommages: {
+            licenciementAbusif: false,
+            cnps: false,
+            certificat: false,
+            releve: false,
+        },
+    })
+
     // =======================
     // PDF
     // =======================
@@ -1804,13 +1937,14 @@
     // =======================
     // AGGRAVATION DE PRÉAVIS
     // =======================
-    const aggravationActive = ref(false)
-
     const indemniteAggravation = computed(() => {
-        if (!aggravationActive.value || !smbbiDetail.value) return 0
+        if (!smbbiDetail.value) return 0
+
         const smmbi = smbbiDetail.value.total
+
         if (modePaiement.value === 'mois') return Math.round(smmbi * 2)
         if (modePaiement.value === 'heure') return Math.round(smmbi * 1)
+
         return 0
     })
 
@@ -1885,7 +2019,7 @@
             (indemniteLicenciement.value || 0) +
                 (indemniteConge.value || 0) +
                 (indemnitePreavis.value || 0) +
-                (aggravationActive.value ? indemniteAggravation.value || 0 : 0) +
+                (indemniteAggravation.value || 0) +
                 (gratificationAnnuelle.value || 0) +
                 (totalRappel.value || 0),
         )
