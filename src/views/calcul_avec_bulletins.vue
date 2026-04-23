@@ -1133,6 +1133,14 @@
     <Aside />
 
     <div id="pdf-content" class="pdf-container">
+        <div class="header">
+            <h1 style="margin: 0 0 6px 0; font-size: 1.4rem; letter-spacing: 1px">
+                CALCUL DES DROITS À LA RUPTURE
+            </h1>
+            <p style="margin: 0; font-size: 0.85rem; opacity: 0.8">
+                Document généré le {{ new Date().toLocaleDateString('fr-FR') }}
+            </p>
+        </div>
         <!-- infos salarié -->
         <div
             class="result-box"
@@ -1213,7 +1221,14 @@
             </div>
         </div>
         <!-- INDEM licenciement -->
-        <div class="result2" vgit-if="typeContrat === 'cdi' && ancienneteDetail && SMMBI">
+        <div
+            class="result2"
+            v-if="
+                typeContrat === 'cdi' &&
+                ancienneteDetail &&
+                SMMBI &&
+                afficher.indemnites.licenciement
+            ">
             <h3>Résultats Indemnité de Licenciement</h3>
             <!-- Calcul par tranche -->
             <div class="result-item" v-for="(tranche, i) in tranches" :key="i">
@@ -1247,7 +1262,7 @@
             </div>
         </div>
         <!-- CONGE PAYE -->
-        <div v-if="dprJours > 0" class="result-box result2">
+        <div v-if="dprJours > 0 && afficher.indemnites.conges" class="result-box result2">
             <h3>Résultats Congés Payés</h3>
 
             <div class="result-item">
@@ -1308,7 +1323,7 @@
             </div>
         </div>
         <!-- PREAVIS -->
-        <div class="result-box result2" v-if="dureePreavis">
+        <div class="result-box result2" v-if="dureePreavis && afficher.indemnites.preavis">
             <h3>Résultats Indemnité compensatrice de préavis</h3>
             <div class="result-item">
                 <!-- <div class="icon">✓</div> -->
@@ -1328,7 +1343,9 @@
         </div>
         <!-- AGGRAVATION -->
 
-        <div class="result-box result2" v-if="indemniteAggravation > 0">
+        <div
+            class="result-box result2"
+            v-if="indemniteAggravation > 0 && afficher.indemnites.aggravationPreavis">
             <h3>Résultat Indemnité de l'aggravation de préavis</h3>
             <div class="result-item">
                 <!-- <div class="icon">✓</div> -->
@@ -1351,7 +1368,9 @@
             </div>
         </div>
         <!-- GRATIFICATION -->
-        <div class="result-box result2" v-if="gratification > 0">
+        <div
+            class="result-box result2"
+            v-if="gratification > 0 && afficher.indemnites.gratification">
             <h3>Résultats Gratification</h3>
             <div class="result-item">
                 <!-- <div class="icon">✓</div> -->
@@ -1362,7 +1381,9 @@
             </div>
         </div>
         <!-- RAPPEL PRIME -->
-        <div v-if="dateEmbauche && dateRupture && salaireMinCat" class="result-box result2">
+        <div
+            v-if="dateEmbauche && dateRupture && salaireMinCat && afficher.indemnites.rappelPrime"
+            class="result-box result2">
             <!-- NON ELIGIBLE -->
             <div v-if="ancienneteDetail.annees < 2" class="info-message">
                 ⚠ Ancienneté < 2 ans → pas de rappel.
@@ -1412,82 +1433,97 @@
         </div>
 
         <!-- RECAP -->
-        <div class="section-container recap-box">
+        <div class="section-container recap-box" v-if="totalDroits > 0">
             <h2 style="text-align: center">RÉCAPITULATIF TOTAL DES INDEMNITÉS</h2>
-
             <div style="margin-top: 20px">
-                <div class="result-item" v-if="(indemnite || 0) > 0">
+                <!-- Indemnité de licenciement -->
+                <div class="result-item" v-if="indemnite > 0 && afficher.indemnites.licenciement">
+                    <!-- <div class="icon">✓</div> -->
                     <div>
                         Indemnité de licenciement :
-                        <span class="value">
-                            {{
-                                (indemnite || 0).toLocaleString('fr-FR', {
+                        <span class="value"
+                            >{{
+                                indemnite.toLocaleString('fr-FR', {
                                     maximumFractionDigits: 0,
                                 })
                             }}
-                            FCFA
-                        </span>
+                            FCFA</span
+                        >
                     </div>
                 </div>
 
-                <div class="result-item" v-if="(indemniteConge || 0) > 0">
+                <!-- Indemnité compensatrice de congés payés -->
+                <div class="result-item" v-if="indemniteConge > 0 && afficher.indemnites.conges">
+                    <!-- <div class="icon">✓</div> -->
                     <div>
                         Indemnité compensatrice de congés payés :
-                        <span class="value">
-                            {{ (indemniteConge || 0).toLocaleString('fr-FR') }} FCFA
-                        </span>
+                        <span class="value">{{ indemniteConge.toLocaleString('fr-FR') }} FCFA</span>
                     </div>
                 </div>
 
-                <div class="result-item" v-if="(indemnitePreavis || 0) > 0">
+                <!-- Indemnité compensatrice de préavis -->
+                <div class="result-item" v-if="indemnitePreavis > 0 && afficher.indemnites.preavis">
+                    <!-- <div class="icon">✓</div> -->
                     <div>
                         Indemnité compensatrice de préavis :
-                        <span class="value">
-                            {{ (indemnitePreavis || 0).toLocaleString('fr-FR') }} FCFA
-                        </span>
+                        <span class="value"
+                            >{{ indemnitePreavis.toLocaleString('fr-FR') }} FCFA</span
+                        >
                     </div>
                 </div>
 
-                <div class="result-item" v-if="(indemniteAggravation || 0) > 0">
+                <!-- Indemnité d'aggravation de préavis -->
+                <div
+                    class="result-item"
+                    v-if="indemniteAggravation > 0 && afficher.indemnites.aggravationPreavis">
+                    <!-- <div class="icon">✓</div> -->
                     <div>
                         Indemnité d'aggravation de préavis :
-                        <span class="value">
-                            {{ (indemniteAggravation || 0).toLocaleString('fr-FR') }} FCFA
-                        </span>
+                        <span class="value"
+                            >{{ indemniteAggravation.toLocaleString('fr-FR') }} FCFA</span
+                        >
                     </div>
                 </div>
 
-                <div class="result-item" v-if="(gratification || 0) > 0">
+                <!-- Gratification -->
+                <div
+                    class="result-item"
+                    v-if="gratification > 0 && afficher.indemnites.gratification">
+                    <!-- <div class="icon">✓</div> -->
                     <div>
                         Gratification :
-                        <span class="value">
-                            {{ (gratification || 0).toLocaleString('fr-FR') }} FCFA
-                        </span>
+                        <span class="value">{{ gratification.toLocaleString('fr-FR') }} FCFA</span>
                     </div>
                 </div>
 
-                <div class="result-item" v-if="(totalRappel || 0) > 0">
+                <!-- Rappel prime d'ancienneté -->
+                <div class="result-item" v-if="totalRappel > 0 && afficher.indemnites.rappelPrime">
+                    <!-- <div class="icon">✓</div> -->
                     <div>
                         Rappel prime d'ancienneté :
-                        <span class="value">
-                            {{ (totalRappel || 0).toLocaleString('fr-FR') }} FCFA
-                        </span>
+                        <span class="value">{{ totalRappel.toLocaleString('fr-FR') }} FCFA</span>
                     </div>
                 </div>
 
-                <!-- TOTAL -->
-                <div class="result-item highlight">
+                <!-- TOTAL GÉNÉRAL -->
+                <div class="result-item highlight" v-if="totalDroits > 0">
+                    <!-- <div class="icon">✓</div> -->
                     <div>
                         <strong>TOTAL GÉNÉRAL DES DROITS : </strong>
-                        <span class="value">
-                            {{ (totalDroits || 0).toLocaleString('fr-FR') }} FCFA
-                        </span>
+                        <span class="value">{{ totalDroits.toLocaleString('fr-FR') }} FCFA</span>
                     </div>
                 </div>
             </div>
         </div>
         <!-- DOAMMAGE LICENCIEMENT -->
-        <div class="result-box result2" v-if="typeContrat === 'cdi' && ancienneteDetail && SMMBI">
+        <div
+            class="result-box result2"
+            v-if="
+                typeContrat === 'cdi' &&
+                ancienneteDetail &&
+                SMMBI &&
+                afficher.dommages.licenciementAbusif
+            ">
             <h3>Résultats Dommages-Intérêts pour licenciement abusif</h3>
             <div class="result-item">
                 <!-- <div class="icon">✓</div> -->
@@ -1522,7 +1558,7 @@
             </div>
         </div>
         <!-- DOMMAGE CNPS -->
-        <div class="result-box result2" v-if="ancienneteDetail && SMMBI">
+        <div class="result-box result2" v-if="ancienneteDetail && SMMBI && afficher.dommages.cnps">
             <h3>Résultats Dommages-intérêts non-déclaration à la CNPS</h3>
             <div class="result-item">
                 <!-- <div class="icon">✓</div> -->
@@ -1554,7 +1590,9 @@
             </div>
         </div>
         <!-- DOMMAGE  -->
-        <div class="result-box result2" v-if="moisCertificat > 0 && SMMBI">
+        <div
+            class="result-box result2"
+            v-if="moisCertificat > 0 && SMMBI && afficher.dommages.certificat">
             <h3>Résultats Dommages-intérêts non-délivrance du certificat de travail</h3>
             <div class="result-item">
                 <div>SMMBI :</div>
@@ -1571,9 +1609,9 @@
                 <span class="value"> {{ totalCertificat.toLocaleString('fr-FR') }} FCFA </span>
             </div>
         </div>
-        <!-- DOMMAGE DERNIER -->
 
-        <div class="result-box result2" v-if="moisReleve > 0 && SMMBI">
+        <!-- DOMMAGE DERNIER -->
+        <div class="result-box result2" v-if="moisReleve > 0 && SMMBI && afficher.dommages.releve">
             <h3>Résultats Dommages-intérêts non-délivrance du relevé nominatif de salaire</h3>
             <div class="result-item">
                 <div>SMMBI :</div>
@@ -1591,13 +1629,14 @@
             </div>
         </div>
         <!-- RECAP -->
-
-        <div class="section-container recap-box">
+        <div class="section-container recap-box" v-if="totalDommages > 0">
             <h2 style="text-align: center">RÉCAPITULATIF DES DOMMAGES-INTÉRÊTS</h2>
 
             <div style="margin-top: 20px">
                 <!-- G -->
-                <div class="result-item" v-if="montantBrutDI > 0">
+                <div
+                    class="result-item"
+                    v-if="montantBrutDI > 0 && afficher.dommages.licenciementAbusif">
                     <!-- <div class="icon">✓</div> -->
                     <div>
                         Licenciement abusif :
@@ -1608,7 +1647,7 @@
                 </div>
 
                 <!-- H -->
-                <div class="result-item" v-if="totalDommagesCNPS > 0">
+                <div class="result-item" v-if="totalDommagesCNPS > 0 && afficher.dommages.cnps">
                     <!-- <div class="icon">✓</div> -->
                     <div>
                         Non-déclaration CNPS :
@@ -1619,7 +1658,7 @@
                 </div>
 
                 <!-- I -->
-                <div class="result-item" v-if="totalCertificat > 0">
+                <div class="result-item" v-if="totalCertificat > 0 && afficher.dommages.certificat">
                     <!-- <div class="icon">✓</div> -->
                     <div>
                         Certificat de travail :
@@ -1630,7 +1669,7 @@
                 </div>
 
                 <!-- J -->
-                <div class="result-item" v-if="totalReleve > 0">
+                <div class="result-item" v-if="totalReleve > 0 && afficher.dommages.releve">
                     <!-- <div class="icon">✓</div> -->
                     <div>
                         Relevé nominatif de salaire :
@@ -1639,7 +1678,15 @@
                 </div>
 
                 <!-- TOTAL -->
-                <div class="result-item highlight">
+                <div
+                    class="result-item highlight"
+                    v-if="
+                        totalDommages > 0 &&
+                        (afficher.dommages.licenciementAbusif ||
+                            afficher.dommages.cnps ||
+                            afficher.dommages.certificat ||
+                            afficher.dommages.releve)
+                    ">
                     <!-- <div class="icon">✓</div> -->
                     <div>
                         <strong>TOTAL DOMMAGES-INTÉRÊTS : </strong>
@@ -1650,12 +1697,13 @@
                 </div>
             </div>
         </div>
+
         <!-- RECAP TOTAL -->
-        <div class="section-container recap-box">
+        <div class="section-container recap-box" v-if="totalDroits > 0 && totalDommages > 0">
             <h2 style="text-align: center">TOTAL GÉNÉRAL (INDÉMNITÉS + DOMMAGES)</h2>
 
             <div style="margin-top: 20px">
-                <div class="result-item">
+                <div class="result-item" v-if="totalDroits > 0 && afficher.indemnites.licenciement">
                     <!-- <div class="icon">✓</div> -->
                     <div>
                         Total indemnités :
@@ -1663,7 +1711,15 @@
                     </div>
                 </div>
 
-                <div class="result-item">
+                <div
+                    class="result-item"
+                    v-if="
+                        totalDommages > 0 &&
+                        (afficher.dommages.licenciementAbusif ||
+                            afficher.dommages.cnps ||
+                            afficher.dommages.certificat ||
+                            afficher.dommages.releve)
+                    ">
                     <!-- <div class="icon">✓</div> -->
                     <div>
                         Total dommages-intérêts :
@@ -1673,7 +1729,7 @@
                     </div>
                 </div>
 
-                <div class="result-item highlight">
+                <div class="result-item highlight" v-if="totalGeneral > 0">
                     <!-- <div class="icon">✓</div> -->
                     <div>
                         <strong>TOTAL GLOBAL: </strong>

@@ -1148,6 +1148,14 @@
 
     <!-- CONTENU PDF (caché visuellement) -->
     <div id="pdf-content" class="pdf-container">
+        <div class="header">
+            <h1 style="margin: 0 0 6px 0; font-size: 1.4rem; letter-spacing: 1px">
+                CALCUL DES DROITS À LA RUPTURE
+            </h1>
+            <p style="margin: 0; font-size: 0.85rem; opacity: 0.8">
+                Document généré le {{ new Date().toLocaleDateString('fr-FR') }}
+            </p>
+        </div>
         <div
             class="result-box"
             v-if="
@@ -1236,7 +1244,11 @@
         <!-- INDEMNITE -->
         <div
             v-if="
-                typeContrat === 'cdi' && ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail
+                typeContrat === 'cdi' &&
+                ancienneteDetail &&
+                !ancienneteDetail.erreur &&
+                smbbiDetail &&
+                afficher.indemnites.licenciement
             "
             class="result2">
             <h3>Résultats Indemnité de Licenciement</h3>
@@ -1274,7 +1286,9 @@
 
         <!-- CONGE PAYE -->
 
-        <div v-if="dprJours > 0 && smbbiDetail" class="result-box result2">
+        <div
+            v-if="dprJours > 0 && smbbiDetail && afficher.indemnites.congePaye"
+            class="result-box result2">
             <h3>Résultats Congés Payés</h3>
 
             <div class="result-item">
@@ -1328,7 +1342,9 @@
             </div>
         </div>
         <!-- PREAVIS -->
-        <div class="result-box result2" v-if="dureePreavisAffichage && smbbiDetail">
+        <div
+            class="result-box result2"
+            v-if="dureePreavisAffichage && smbbiDetail && afficher.indemnites.preavis">
             <h3>Résultats Indemnité compensatrice de préavis</h3>
 
             <div class="result-item">
@@ -1377,7 +1393,9 @@
             </div>
         </div>
         <!-- GRATIFICATION -->
-        <div class="result-box result2" v-if="gratificationAnnuelle > 0">
+        <div
+            class="result-box result2"
+            v-if="gratificationAnnuelle > 0 && afficher.indemnites.gratification">
             <h3>Résultats Gratification</h3>
             <div class="result-item">
                 <div>
@@ -1388,11 +1406,14 @@
                 </div>
             </div>
         </div>
+
         <!-- RECAP INDEM -->
-        <div class="section-container recap-box">
+        <div class="section-container recap-box" v-if="totalDroits > 0">
             <h2 style="text-align: center">RÉCAPITULATIF TOTAL DES INDEMNITÉS</h2>
             <div style="margin-top: 20px">
-                <div class="result-item" v-if="indemniteLicenciement > 0">
+                <div
+                    class="result-item"
+                    v-if="indemniteLicenciement > 0 && afficher.indemnites.licenciement">
                     <div>
                         Indemnité de licenciement :
                         <span class="value">
@@ -1406,14 +1427,14 @@
                     </div>
                 </div>
 
-                <div class="result-item" v-if="indemniteConge > 0">
+                <div class="result-item" v-if="indemniteConge > 0 && afficher.indemnites.conges">
                     <div>
                         Indemnité compensatrice de congés payés :
                         <span class="value">{{ indemniteConge.toLocaleString('fr-FR') }} FCFA</span>
                     </div>
                 </div>
 
-                <div class="result-item" v-if="indemnitePreavis > 0">
+                <div class="result-item" v-if="indemnitePreavis > 0 && afficher.indemnites.preavis">
                     <div>
                         Indemnité compensatrice de préavis :
                         <span class="value"
@@ -1433,7 +1454,9 @@
                     </div>
                 </div>
 
-                <div class="result-item" v-if="gratificationAnnuelle > 0">
+                <div
+                    class="result-item"
+                    v-if="gratificationAnnuelle > 0 && afficher.indemnites.gratification">
                     <div>
                         Gratification :
                         <span class="value"
@@ -1442,14 +1465,14 @@
                     </div>
                 </div>
 
-                <div class="result-item" v-if="totalRappel > 0">
+                <div class="result-item" v-if="totalRappel > 0 && afficher.indemnites.rappel">
                     <div>
                         Rappel prime d'ancienneté :
                         <span class="value">{{ totalRappel.toLocaleString('fr-FR') }} FCFA</span>
                     </div>
                 </div>
 
-                <div class="result-item highlight">
+                <div class="result-item highlight" v-if="totalDroits > 0">
                     <div>
                         <strong>TOTAL GÉNÉRAL DES DROITS : </strong>
                         <span class="value">{{ totalDroits.toLocaleString('fr-FR') }} FCFA</span>
@@ -1460,7 +1483,12 @@
 
         <!-- DOMMAGE LICENCIEMENT -->
         <div
-            v-if="ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail"
+            v-if="
+                ancienneteDetail &&
+                !ancienneteDetail.erreur &&
+                smbbiDetail &&
+                afficher.dommages.licenciementAbusif
+            "
             class="result-box result2">
             <h3>Résultats Dommages-Intérêts pour licenciement abusif</h3>
 
@@ -1505,7 +1533,12 @@
 
         <div
             class="result-box result2"
-            v-if="ancienneteDetail && !ancienneteDetail.erreur && smbbiDetail">
+            v-if="
+                ancienneteDetail &&
+                !ancienneteDetail.erreur &&
+                smbbiDetail &&
+                afficher.dommages.cnps
+            ">
             <h3>Résultats Dommages CNPS</h3>
 
             <div class="result-item">
@@ -1548,7 +1581,9 @@
 
         <!-- DOMMAGE -->
 
-        <div class="result-box result2" v-if="moisCertificat > 0 && smbbiDetail">
+        <div
+            class="result-box result2"
+            v-if="moisCertificat > 0 && smbbiDetail && afficher.dommages.certificat">
             <h3>Résultats Dommages Certificat</h3>
 
             <div class="result-item">
@@ -1574,7 +1609,9 @@
         </div>
         <!-- DOMMAGE -->
 
-        <div class="result-box result2" v-if="moisReleve > 0 && smbbiDetail">
+        <div
+            class="result-box result2"
+            v-if="moisReleve > 0 && smbbiDetail && afficher.dommages.releve">
             <h3>Résultats Dommages Relevé Nominatif</h3>
 
             <div class="result-item">
@@ -1599,12 +1636,14 @@
             </div>
         </div>
 
-        <!-- RECAP -->
-        <div class="section-container recap-box">
+        <!-- RECAP DOMMAGE -->
+        <div class="section-container recap-box" v-if="totalDommages > 0">
             <h2 style="text-align: center">RÉCAPITULATIF DES DOMMAGES-INTÉRÊTS</h2>
 
             <div style="margin-top: 20px">
-                <div class="result-item" v-if="dommagesInterets > 0">
+                <div
+                    class="result-item"
+                    v-if="dommagesInterets > 0 && afficher.dommages.licenciementAbusif">
                     <div>
                         Licenciement abusif :
                         <span class="value"
@@ -1613,7 +1652,7 @@
                     </div>
                 </div>
 
-                <div class="result-item" v-if="totalDommagesCNPS > 0">
+                <div class="result-item" v-if="totalDommagesCNPS > 0 && afficher.dommages.cnps">
                     <div>
                         Non-déclaration CNPS :
                         <span class="value"
@@ -1622,7 +1661,7 @@
                     </div>
                 </div>
 
-                <div class="result-item" v-if="totalCertificat > 0">
+                <div class="result-item" v-if="totalCertificat > 0 && afficher.dommages.certificat">
                     <div>
                         Certificat de travail :
                         <span class="value"
@@ -1631,14 +1670,14 @@
                     </div>
                 </div>
 
-                <div class="result-item" v-if="totalReleve > 0">
+                <div class="result-item" v-if="totalReleve > 0 && afficher.dommages.releve">
                     <div>
                         Relevé nominatif de salaire :
                         <span class="value">{{ totalReleve.toLocaleString('fr-FR') }} FCFA</span>
                     </div>
                 </div>
 
-                <div class="result-item highlight">
+                <div class="result-item highlight" v-if="totalDommages > 0">
                     <div>
                         <strong>TOTAL DOMMAGES-INTÉRÊTS : </strong>
                         <span class="value">{{ totalDommages.toLocaleString('fr-FR') }} FCFA</span>
@@ -1647,18 +1686,14 @@
             </div>
         </div>
 
-        <!-- RECAP -->
+        <!-- RECAP TOTAL-->
 
-        <div class="section-container recap-box">
+        <div class="section-container recap-box" v-if="totalDroits > 0 || totalDommages > 0">
             <h2 style="text-align: center">TOTAL GÉNÉRAL (INDÉMNITÉS + DOMMAGES)</h2>
 
             <div style="margin-top: 20px">
-                <div v-if="totalGeneral === 0" class="info-message">
-                    ⚠ Aucun montant calculé pour le moment
-                </div>
-
-                <div v-else>
-                    <div class="result-item">
+                <div>
+                    <div class="result-item" v-if="totalDroits > 0">
                         <div>
                             Total indemnités :
                             <span class="value"
@@ -1667,7 +1702,7 @@
                         </div>
                     </div>
 
-                    <div class="result-item">
+                    <div class="result-item" v-if="totalDommages > 0">
                         <div>
                             Total dommages-intérêts :
                             <span class="value"
@@ -1676,7 +1711,7 @@
                         </div>
                     </div>
 
-                    <div class="result-item highlight">
+                    <div class="result-item highlight" v-if="totalGeneral > 0">
                         <div>
                             <strong>TOTAL GLOBAL : </strong>
                             <span class="value big"

@@ -336,7 +336,7 @@ strong {
 /* Empêche les blocs de se couper */
 .result-box,
 .result2,
-.section-container {
+.section-container, .recap-box, .highlight {
     page-break-inside: avoid;
     break-inside: avoid;
     margin-bottom: 15px;
@@ -383,4 +383,9 @@ h4 {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
 }
