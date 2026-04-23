@@ -1,5 +1,5 @@
 <template>
-    <Header />
+    <Header @toggle-all="handleToggleAll" />
     <div class="container">
         <!-- TITRES -->
         <div class="titles">
@@ -650,7 +650,9 @@
             <div class="section-container recap-box">
                 <h2 style="text-align: center">RÉCAPITULATIF TOTAL DES INDEMNITÉS</h2>
                 <div style="margin-top: 20px">
-                    <div class="result-item" v-if="indemniteLicenciement > 0">
+                    <div
+                        class="result-item"
+                        v-if="indemniteLicenciement > 0 && afficher.indemnites.licenciement">
                         <div>
                             Indemnité de licenciement :
                             <span class="value">
@@ -664,7 +666,9 @@
                         </div>
                     </div>
 
-                    <div class="result-item" v-if="indemniteConge > 0">
+                    <div
+                        class="result-item"
+                        v-if="indemniteConge > 0 && afficher.indemnites.conges">
                         <div>
                             Indemnité compensatrice de congés payés :
                             <span class="value"
@@ -673,7 +677,9 @@
                         </div>
                     </div>
 
-                    <div class="result-item" v-if="indemnitePreavis > 0">
+                    <div
+                        class="result-item"
+                        v-if="indemnitePreavis > 0 && afficher.indemnites.preavis">
                         <div>
                             Indemnité compensatrice de préavis :
                             <span class="value"
@@ -693,7 +699,9 @@
                         </div>
                     </div>
 
-                    <div class="result-item" v-if="gratificationAnnuelle > 0">
+                    <div
+                        class="result-item"
+                        v-if="gratificationAnnuelle > 0 && afficher.indemnites.gratification">
                         <div>
                             Gratification :
                             <span class="value"
@@ -702,7 +710,7 @@
                         </div>
                     </div>
 
-                    <div class="result-item" v-if="totalRappel > 0">
+                    <div class="result-item" v-if="totalRappel > 0 && afficher.indemnites.rappel">
                         <div>
                             Rappel prime d'ancienneté :
                             <span class="value"
@@ -711,7 +719,7 @@
                         </div>
                     </div>
 
-                    <div class="result-item highlight">
+                    <div class="result-item highlight" v-if="totalDroits > 0">
                         <div>
                             <strong>TOTAL GÉNÉRAL DES DROITS : </strong>
                             <span class="value"
@@ -984,7 +992,9 @@
                     </div>
                 </div>
 
-                <div class="result-box result2" v-if="moisReleve > 0 && smbbiDetail && afficher.dommages.releve">
+                <div
+                    class="result-box result2"
+                    v-if="moisReleve > 0 && smbbiDetail && afficher.dommages.releve">
                     <h3>Résultats Dommages Relevé Nominatif</h3>
 
                     <div class="result-item">
@@ -1031,7 +1041,9 @@
                 <h2 style="text-align: center">RÉCAPITULATIF DES DOMMAGES-INTÉRÊTS</h2>
 
                 <div style="margin-top: 20px">
-                    <div class="result-item" v-if="dommagesInterets > 0">
+                    <div
+                        class="result-item"
+                        v-if="dommagesInterets > 0 && afficher.dommages.licenciementAbusif">
                         <div>
                             Licenciement abusif :
                             <span class="value"
@@ -1040,7 +1052,7 @@
                         </div>
                     </div>
 
-                    <div class="result-item" v-if="totalDommagesCNPS > 0">
+                    <div class="result-item" v-if="totalDommagesCNPS > 0 && afficher.dommages.cnps">
                         <div>
                             Non-déclaration CNPS :
                             <span class="value"
@@ -1049,7 +1061,9 @@
                         </div>
                     </div>
 
-                    <div class="result-item" v-if="totalCertificat > 0">
+                    <div
+                        class="result-item"
+                        v-if="totalCertificat > 0 && afficher.dommages.certificat">
                         <div>
                             Certificat de travail :
                             <span class="value"
@@ -1058,7 +1072,7 @@
                         </div>
                     </div>
 
-                    <div class="result-item" v-if="totalReleve > 0">
+                    <div class="result-item" v-if="totalReleve > 0 && afficher.dommages.releve">
                         <div>
                             Relevé nominatif de salaire :
                             <span class="value"
@@ -1067,7 +1081,7 @@
                         </div>
                     </div>
 
-                    <div class="result-item highlight">
+                    <div class="result-item highlight" v-if="totalDommages > 0">
                         <div>
                             <strong>TOTAL DOMMAGES-INTÉRÊTS : </strong>
                             <span class="value"
@@ -1085,12 +1099,8 @@
                 <h2 style="text-align: center">TOTAL GÉNÉRAL (INDÉMNITÉS + DOMMAGES)</h2>
 
                 <div style="margin-top: 20px">
-                    <div v-if="totalGeneral === 0" class="info-message">
-                        ⚠ Aucun montant calculé pour le moment
-                    </div>
-
-                    <div v-else>
-                        <div class="result-item">
+                    <div>
+                        <div class="result-item" v-if="totalDroits > 0">
                             <div>
                                 Total indemnités :
                                 <span class="value"
@@ -1099,7 +1109,7 @@
                             </div>
                         </div>
 
-                        <div class="result-item">
+                        <div class="result-item" v-if="totalDommages > 0">
                             <div>
                                 Total dommages-intérêts :
                                 <span class="value"
@@ -1108,7 +1118,7 @@
                             </div>
                         </div>
 
-                        <div class="result-item highlight">
+                        <div class="result-item highlight" v-if="totalGeneral > 0">
                             <div>
                                 <strong>TOTAL GLOBAL : </strong>
                                 <span class="value big"
@@ -1120,8 +1130,16 @@
                 </div>
             </div>
         </section>
+
+        <!-- BOUTON DE TÉLÉCHARGEMENT -->
         <div class="btn-container">
             <button @click="genererPDF" class="btn-pdf">Télécharger le PDF</button>
+        </div>
+
+        <!-- loader -->
+        <div v-if="loadingPDF" class="pdf-loader">
+            <div class="spinner"></div>
+            <p>Génération du PDF...</p>
         </div>
     </div>
 
@@ -1678,6 +1696,19 @@
     import Aside from '@/components/Aside.vue'
     import html2pdf from 'html2pdf.js'
 
+    // AAFICHER DIRECTEMENT LES RESULTATS
+    const handleToggleAll = value => {
+        Object.keys(afficher.value.indemnites).forEach(key => {
+            afficher.value.indemnites[key] = value
+        })
+
+        Object.keys(afficher.value.dommages).forEach(key => {
+            afficher.value.dommages[key] = value
+        })
+
+        afficher.value.recapitulatif = value
+    }
+
     // AFFICHER RESULTAT
 
     const afficher = ref({
@@ -1701,35 +1732,41 @@
     // =======================
     // PDF
     // =======================
-    const genererPDF = () => {
-        const element = document.getElementById('pdf-content')
 
-        const cleanFileName = name => {
-            return name
-                .normalize('NFD') // enlève accents
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-zA-Z0-9]/g, '_') // remplace tout par _
-        }
-        // Active affichage du contenu PDF
+    const loadingPDF = ref(false)
+
+    const cleanFileName = name => {
+        return name
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9]/g, '_')
+    }
+
+    const genererPDF = async () => {
+        const element = document.getElementById('pdf-content')
+        if (!element) return
+
+        loadingPDF.value = true
         document.body.classList.add('pdf-mode')
 
         const opt = {
             margin: 10,
             filename: `Calcul_droits_${cleanFileName(nom.value || 'salarie')}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 5, useCORS: true },
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: {
+                scale: 2, // ⚠️ 5 = très lent, 2 est largement suffisant
+                useCORS: true,
+            },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['avoid-all', 'css'] },
         }
 
-        html2pdf()
-            .set(opt)
-            .from(element)
-            .save()
-            .then(() => {
-                // Remet la page normale après génération
-                document.body.classList.remove('pdf-mode')
-            })
+        try {
+            await html2pdf().set(opt).from(element).save()
+        } finally {
+            document.body.classList.remove('pdf-mode')
+            loadingPDF.value = false
+        }
     }
 
     // =======================
@@ -2015,14 +2052,18 @@
     // TOTAL INDEMNITÉS
     // =======================
     const totalDroits = computed(() => {
-        return Math.round(
-            (indemniteLicenciement.value || 0) +
-                (indemniteConge.value || 0) +
-                (indemnitePreavis.value || 0) +
-                (indemniteAggravation.value || 0) +
-                (gratificationAnnuelle.value || 0) +
-                (totalRappel.value || 0),
-        )
+        let total = 0
+
+        const i = afficher.value.indemnites
+
+        if (i.licenciement) total += indemniteLicenciement.value || 0
+        if (i.conges) total += indemniteConge.value || 0
+        if (i.preavis) total += indemnitePreavis.value || 0
+        if (i.aggravationPreavis) total += indemniteAggravation.value || 0
+        if (i.gratification) total += gratificationAnnuelle.value || 0
+        if (i.rappelPrime) total += totalRappel.value || 0
+
+        return Math.round(total)
     })
 
     // =======================
@@ -2092,12 +2133,16 @@
     // TOTAL DOMMAGES
     // =======================
     const totalDommages = computed(() => {
-        return Math.round(
-            (dommagesInterets.value || 0) +
-                (totalDommagesCNPS.value || 0) +
-                (totalCertificat.value || 0) +
-                (totalReleve.value || 0),
-        )
+        let total = 0
+
+        const d = afficher.value.dommages
+
+        if (d.licenciementAbusif) total += dommagesInterets.value || 0
+        if (d.cnps) total += totalDommagesCNPS.value || 0
+        if (d.certificat) total += totalCertificat.value || 0
+        if (d.releve) total += totalReleve.value || 0
+
+        return Math.round(total)
     })
 
     // =======================

@@ -670,7 +670,9 @@
                 <h2 style="text-align: center">RÉCAPITULATIF TOTAL DES INDEMNITÉS</h2>
                 <div style="margin-top: 20px">
                     <!-- Indemnité de licenciement -->
-                    <div class="result-item" v-if="indemnite > 0">
+                    <div
+                        class="result-item"
+                        v-if="indemnite > 0 && afficher.indemnites.licenciement">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Indemnité de licenciement :
@@ -686,7 +688,9 @@
                     </div>
 
                     <!-- Indemnité compensatrice de congés payés -->
-                    <div class="result-item" v-if="indemniteConge > 0">
+                    <div
+                        class="result-item"
+                        v-if="indemniteConge > 0 && afficher.indemnites.conges">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Indemnité compensatrice de congés payés :
@@ -697,7 +701,9 @@
                     </div>
 
                     <!-- Indemnité compensatrice de préavis -->
-                    <div class="result-item" v-if="indemnitePreavis > 0">
+                    <div
+                        class="result-item"
+                        v-if="indemnitePreavis > 0 && afficher.indemnites.preavis">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Indemnité compensatrice de préavis :
@@ -708,7 +714,9 @@
                     </div>
 
                     <!-- Indemnité d'aggravation de préavis -->
-                    <div class="result-item" v-if="indemniteAggravation > 0">
+                    <div
+                        class="result-item"
+                        v-if="indemniteAggravation > 0 && afficher.indemnites.aggravationPreavis">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Indemnité d'aggravation de préavis :
@@ -719,7 +727,9 @@
                     </div>
 
                     <!-- Gratification -->
-                    <div class="result-item" v-if="gratification > 0">
+                    <div
+                        class="result-item"
+                        v-if="gratification > 0 && afficher.indemnites.gratification">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Gratification :
@@ -730,7 +740,9 @@
                     </div>
 
                     <!-- Rappel prime d'ancienneté -->
-                    <div class="result-item" v-if="totalRappel > 0">
+                    <div
+                        class="result-item"
+                        v-if="totalRappel > 0 && afficher.indemnites.rappelPrime">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Rappel prime d'ancienneté :
@@ -741,7 +753,7 @@
                     </div>
 
                     <!-- TOTAL GÉNÉRAL -->
-                    <div class="result-item highlight">
+                    <div class="result-item highlight" v-if="totalDroits > 0">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             <strong>TOTAL GÉNÉRAL DES DROITS : </strong>
@@ -842,6 +854,7 @@
                 <div
                     class="result-box result2"
                     v-if="ancienneteDetail && SMMBI && afficher.dommages.cnps">
+                    <h3>Résultats Dommages-Intérêts pour non-déclaration à la CNPS</h3>
                     <div class="result-item">
                         <!-- <div class="icon">✓</div> -->
                         <div>SMMBI (base de cotisation) :</div>
@@ -905,6 +918,9 @@
                 <div
                     class="result-box result2"
                     v-if="moisCertificat > 0 && SMMBI && afficher.dommages.certificat">
+                    <h3>
+                        Résultats Dommages-Intérêts pour non-délivrance du certificat de travail
+                    </h3>
                     <div class="result-item">
                         <div>SMMBI :</div>
                         <span class="value"> {{ SMMBI.toLocaleString('fr-FR') }} FCFA </span>
@@ -954,6 +970,10 @@
                 <div
                     class="result-box result2"
                     v-if="moisReleve > 0 && SMMBI && afficher.dommages.releve">
+                    <h3>
+                        Résultats Dommages-Intérêts pour non-délivrance du relevé nominatif de
+                        salaire
+                    </h3>
                     <div class="result-item">
                         <div>SMMBI :</div>
                         <span class="value"> {{ SMMBI.toLocaleString('fr-FR') }} FCFA </span>
@@ -979,7 +999,9 @@
 
                 <div style="margin-top: 20px">
                     <!-- G -->
-                    <div class="result-item" v-if="montantBrutDI > 0">
+                    <div
+                        class="result-item"
+                        v-if="montantBrutDI > 0 && afficher.dommages.licenciementAbusif">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Licenciement abusif :
@@ -990,7 +1012,7 @@
                     </div>
 
                     <!-- H -->
-                    <div class="result-item" v-if="totalDommagesCNPS > 0">
+                    <div class="result-item" v-if="totalDommagesCNPS > 0 && afficher.dommages.cnps">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Non-déclaration CNPS :
@@ -1001,7 +1023,9 @@
                     </div>
 
                     <!-- I -->
-                    <div class="result-item" v-if="totalCertificat > 0">
+                    <div
+                        class="result-item"
+                        v-if="totalCertificat > 0 && afficher.dommages.certificat">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Certificat de travail :
@@ -1012,7 +1036,7 @@
                     </div>
 
                     <!-- J -->
-                    <div class="result-item" v-if="totalReleve > 0">
+                    <div class="result-item" v-if="totalReleve > 0 && afficher.dommages.releve">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Relevé nominatif de salaire :
@@ -1023,7 +1047,15 @@
                     </div>
 
                     <!-- TOTAL -->
-                    <div class="result-item highlight">
+                    <div
+                        class="result-item highlight"
+                        v-if="
+                            totalDommages > 0 &&
+                            (afficher.dommages.licenciementAbusif ||
+                                afficher.dommages.cnps ||
+                                afficher.dommages.certificat ||
+                                afficher.dommages.releve)
+                        ">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             <strong>TOTAL DOMMAGES-INTÉRÊTS : </strong>
@@ -1042,7 +1074,9 @@
                 <h2 style="text-align: center">TOTAL GÉNÉRAL (INDÉMNITÉS + DOMMAGES)</h2>
 
                 <div style="margin-top: 20px">
-                    <div class="result-item">
+                    <div
+                        class="result-item"
+                        v-if="totalDroits > 0 && afficher.indemnites.licenciement">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Total indemnités :
@@ -1052,7 +1086,15 @@
                         </div>
                     </div>
 
-                    <div class="result-item">
+                    <div
+                        class="result-item"
+                        v-if="
+                            totalDommages > 0 &&
+                            (afficher.dommages.licenciementAbusif ||
+                                afficher.dommages.cnps ||
+                                afficher.dommages.certificat ||
+                                afficher.dommages.releve)
+                        ">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             Total dommages-intérêts :
@@ -1062,7 +1104,7 @@
                         </div>
                     </div>
 
-                    <div class="result-item highlight">
+                    <div class="result-item highlight" v-if="totalGeneral > 0">
                         <!-- <div class="icon">✓</div> -->
                         <div>
                             <strong>TOTAL GLOBAL: </strong>
@@ -1078,6 +1120,11 @@
         <!-- BOUTON DE TÉLÉCHARGEMENT -->
         <div class="btn-container">
             <button @click="genererPDF" class="btn-pdf">Télécharger le PDF</button>
+        </div>
+
+        <div v-if="loadingPDF" class="pdf-loader">
+            <div class="spinner"></div>
+            <p>Génération du PDF...</p>
         </div>
     </div>
 
@@ -1688,9 +1735,11 @@
             .replace(/[^a-zA-Z0-9]/g, '_')
     }
 
+    const loadingPDF = ref(false)
     const genererPDF = () => {
         const element = document.getElementById('pdf-content')
 
+        loadingPDF.value = true
         document.body.classList.add('pdf-mode')
 
         const today = new Date().toISOString().split('T')[0]
@@ -1710,6 +1759,9 @@
             .save()
             .then(() => {
                 document.body.classList.remove('pdf-mode')
+            })
+            .finally(() => {
+                loadingPDF.value = false
             })
     }
 
@@ -2027,14 +2079,33 @@
 
     // Calcul du total général
     const totalDroits = computed(() => {
-        return (
-            (indemnite.value || 0) +
-            (indemniteConge.value || 0) +
-            (indemnitePreavis.value || 0) +
-            (indemniteAggravation.value || 0) +
-            (gratification.value || 0) +
-            (totalRappel.value || 0)
-        )
+        let total = 0
+
+        if (afficher.value.indemnites.licenciement) {
+            total += indemnite.value || 0
+        }
+
+        if (afficher.value.indemnites.conges) {
+            total += indemniteConge.value || 0
+        }
+
+        if (afficher.value.indemnites.preavis) {
+            total += indemnitePreavis.value || 0
+        }
+
+        if (afficher.value.indemnites.aggravationPreavis) {
+            total += indemniteAggravation.value || 0
+        }
+
+        if (afficher.value.indemnites.gratification) {
+            total += gratification.value || 0
+        }
+
+        if (afficher.value.indemnites.rappelPrime) {
+            total += totalRappel.value || 0
+        }
+
+        return Math.round(total)
     })
 
     // DOMMAGES-INTÉRÊTS POUR LICENCIEMENT ABUSIF
@@ -2090,11 +2161,13 @@
     })
 
     const totalDommages = computed(() => {
-        return (
-            (montantBrutDI.value || 0) + // G
-            (totalDommagesCNPS.value || 0) + // H
-            (totalCertificat.value || 0) + // I
-            (totalReleve.value || 0) // J
+        const d = afficher.value.dommages
+
+        return Math.round(
+            (d.licenciementAbusif ? montantBrutDI.value : 0) +
+                (d.cnps ? totalDommagesCNPS.value : 0) +
+                (d.certificat ? totalCertificat.value : 0) +
+                (d.releve ? totalReleve.value : 0),
         )
     })
 
