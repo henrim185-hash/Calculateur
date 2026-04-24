@@ -3,7 +3,7 @@
     scroll-behavior: smooth;
 } */
 body {
-    background-color: #f9fafb;
+    background-color: #F5F5F5;
     margin: 0;
     font-family: 'Inter', sans-serif;
 }
@@ -287,6 +287,9 @@ strong {
     .input-section select {
         font-size: 0.9rem;
         padding: 0.7rem;
+    }
+    .container {
+        padding: 0;
     }
 }
 

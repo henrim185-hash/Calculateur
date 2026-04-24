@@ -16,7 +16,7 @@
                 >Calcul sans bulletins</router-link
             >
             <router-link to="/formules" @click="closeMenu">Formules de calcules</router-link>
-            <div class="switcher">
+            <div class="switcher" title="Afficher directement les résultats">
                 <span></span>
                 <label class="switch">
                     <input type="checkbox" @change="handleToggle" />
@@ -54,7 +54,7 @@
         justify-content: space-between;
         padding: 0 20px;
         height: 70px;
-        background-color: #f4f4f4;
+        background-color: #eee;
         position: relative;
         z-index: 10;
     }
@@ -188,7 +188,7 @@
         width: 1.4em;
         left: 0.3em;
         bottom: 0.3em;
-        background-color: #cccccc;
+        background-color: firebrick;
         border-radius: inherit;
         transition: all 0.4s cubic-bezier(0.215, 0.61, 0.355, 1);
     }

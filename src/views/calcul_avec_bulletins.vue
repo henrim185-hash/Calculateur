@@ -166,7 +166,7 @@
                 </div>
 
                 <!-- CAS NON APPLICABLE -->
-                <div v-if="typeContrat !== 'cdi'" class="info-message" style="text-align: center;">
+                <div v-if="typeContrat !== 'cdi'" class="info-message" style="text-align: center">
                     ⚠ L’indemnité de licenciement s’applique uniquement aux contrats CDI.
                 </div>
                 <!-- CAS VALIDE -->
@@ -765,7 +765,9 @@
                 </div>
             </div>
         </section>
-        <h1 style="text-align: center; margin-bottom: 20px; margin-top: 40px;">II - CALCUL DES DOMMAGES-INTÉRÊTS</h1>
+        <h1 style="text-align: center; margin-bottom: 20px; margin-top: 40px">
+            II - CALCUL DES DOMMAGES-INTÉRÊTS
+        </h1>
         <!-- DOMMAGES-INTÉRÊTS POUR LICENCIEMENT ABUSIF -->
         <section id="dommages-licenciement-abusif">
             <div class="section-container indem-abusif">
@@ -1071,7 +1073,7 @@
         <!-- RÉCAPITULATIF DU TOTAL GÉNÉRAL -->
         <section>
             <div class="section-container recap-box">
-                <h2 style="text-align: center">TOTAL GÉNÉRAL (INDÉMNITÉS + DOMMAGES)</h2>
+                <h2 style="text-align: center">TOTAL GÉNÉRAL</h2>
 
                 <div style="margin-top: 20px">
                     <div
@@ -1701,7 +1703,7 @@
 
         <!-- RECAP TOTAL -->
         <div class="section-container recap-box" v-if="totalDroits > 0 && totalDommages > 0">
-            <h2 style="text-align: center">TOTAL GÉNÉRAL (INDÉMNITÉS + DOMMAGES)</h2>
+            <h2 style="text-align: center">TOTAL GÉNÉRAL</h2>
 
             <div style="margin-top: 20px">
                 <div class="result-item" v-if="totalDroits > 0 && afficher.indemnites.licenciement">
