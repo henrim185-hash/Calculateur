@@ -106,7 +106,7 @@
                         <input
                             type="number"
                             v-model.number="salaireMinCat"
-                            placeholder="Ex: 150000" />
+                            placeholder="Ex: 200 000" />
                     </div>
 
                     <div class="form-group">
@@ -178,7 +178,7 @@
                 </div>
 
                 <!-- CAS NON APPLICABLE -->
-                <div v-if="typeContrat !== 'cdi'" class="info-message">
+                <div v-if="typeContrat !== 'cdi'" class="info-message" style="text-align: center;">
                     ⚠ L'indemnité de licenciement s'applique uniquement aux contrats CDI.
                 </div>
 

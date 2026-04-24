@@ -166,7 +166,7 @@
                 </div>
 
                 <!-- CAS NON APPLICABLE -->
-                <div v-if="typeContrat !== 'cdi'" class="info-message">
+                <div v-if="typeContrat !== 'cdi'" class="info-message" style="text-align: center;">
                     ⚠ L’indemnité de licenciement s’applique uniquement aux contrats CDI.
                 </div>
                 <!-- CAS VALIDE -->
@@ -765,7 +765,7 @@
                 </div>
             </div>
         </section>
-
+        <h1 style="text-align: center; margin-bottom: 20px; margin-top: 40px;">II - CALCUL DES DOMMAGES-INTÉRÊTS</h1>
         <!-- DOMMAGES-INTÉRÊTS POUR LICENCIEMENT ABUSIF -->
         <section id="dommages-licenciement-abusif">
             <div class="section-container indem-abusif">
@@ -1515,6 +1515,7 @@
                 </div>
             </div>
         </div>
+
         <!-- DOAMMAGE LICENCIEMENT -->
         <div
             class="result-box result2"
@@ -1794,7 +1795,6 @@
     const loadingPDF = ref(false)
     const genererPDF = () => {
         const element = document.getElementById('pdf-content')
-
         loadingPDF.value = true
         document.body.classList.add('pdf-mode')
 
