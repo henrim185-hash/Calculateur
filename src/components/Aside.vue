@@ -105,8 +105,9 @@
         top: 100px;
         left: 20px;
         width: 220px;
-        background: #f9f9f9;
-        border: 1px solid #e67e22;
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        border: solid 2px #e67e2250;
         padding: 15px;
         border-radius: 8px;
         max-height: 80vh;
@@ -128,6 +129,7 @@
         text-decoration: none;
         color: #333;
         font-weight: 500;
+        font-size: 15px;
     }
 
     .sidebar a:hover {

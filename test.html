@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Moderne</title>
+    <style>
+        /* Reset basique pour la démo */
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f6f8;
+            height: 200vh; /* Pour tester le scroll */
+        }
+
+        /* --- VARIABLES --- */
+        :root {
+            --primary-color: #e67e22;
+            --primary-hover: #d35400;
+            --text-color: #2c3e50;
+            --bg-sidebar: #ffffff;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* --- BOUTON HAMBURGER --- */
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 10px rgba(230, 126, 34, 0.4);
+            transition: var(--transition);
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.05);
+            background: var(--primary-hover);
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        /* Animation Hamburger -> Croix */
+        .menu-toggle.active span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+        .menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+        .menu-toggle.active span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        /* Déplacement du bouton quand le menu est ouvert (sur mobile) */
+        @media (max-width: 1385px) {
+            .menu-toggle.active {
+                left: 280px; /* Largeur du menu + marge */
+                background: transparent;
+                box-shadow: none;
+            }
+            .menu-toggle.active span {
+                background: #333; /* Couleur sombre sur fond blanc du menu */
+            }
+        }
+
+        /* --- OVERLAY --- */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px); /* Effet flou moderne */
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            bottom: 20px; /* Flottant moderne */
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            transform: translateX(0);
+        }
+
+        /* Titre du menu */
+        .sidebar-header {
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar nav {
+            flex: 1;
+            overflow-y: auto;
+            /* Scrollbar stylisée */
+            scrollbar-width: thin;
+            scrollbar-color: #ddd transparent;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        /* Icônes SVG */
+        .sidebar a svg {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            color: #95a5a6;
+            transition: var(--transition);
+        }
+
+        /* États Hover et Active */
+        .sidebar a:hover {
+            background-color: #fff5eb; /* Orange très clair */
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .sidebar a:hover svg {
+            color: var(--primary-color);
+        }
+
+        /* Indicateur actif (optionnel si on veut marquer la page courante) */
+        .sidebar a.active-link {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);
+        }
+        .sidebar a.active-link svg {
+            color: white;
+        }
+
+        /* --- RESPONSIVE (Mobile / Tablette) --- */
+        @media (max-width: 1385px) {
+            .sidebar {
+                top: 0;
+                left: 0;
+                bottom: 0;
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0 20px 20px 0; /* Arrondi uniquement à droite */
+                transform: translateX(-100%); /* Caché par défaut */
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+        
+        /* Cacher la sidebar sur grand écran si besoin, ici elle est toujours visible */
+        /* Si vous voulez qu'elle soit cachée aussi sur desktop, ajustez le CSS en conséquence */
+    </style>
+</head>
+<body>
+
+    <!-- Bouton hamburger -->
+    <button class="menu-toggle" id="menuToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span>Navigation</span>
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a href="#header">
+                        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        Entête
+                    </a>
+                </li>
+                <li>
+                    <a href="#info-salarie">
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        Informations salarié
+                    </a>
+                </li>
+                <li>
+                    <a href="#salaires">
+                        <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        Salaires 12 mois
+                    </a>
+                </li>
+                <li>
+                    <a href="#indemnite-licenciement">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Indemnité licenciement
+                    </a>
+                </li>
+                <li>
+                    <a href="#conges-payes">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        Congés payés
+                    </a>
+                </li>
+                <li>
+                    <a href="#preavis">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Indemnité préavis
+                    </a>
+                </li>
+                <li>
+                    <a href="#aggravation-preavis">
+                        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Aggravation préavis
+                    </a>
+                </li>
+                <li>
+                    <a href="#gratification">
+                        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        Gratification
+                    </a>
+                </li>
+                <li>
+                    <a href="#rappel-prime">
+                        <svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                        Rappel prime ancienneté
+                    </a>
+                </li>
+                <li>
+                    <a href="#recapitulatif">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Récapitulatif
+                    </a>
+                </li>
+                <li>
+                    <a href="#dommages-licenciement-abusif">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                        Licenciement abusif
+                    </a>
+                </li>
+                <li>
+                    <a href="#dommages-cnps">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                        Dommages CNPS
+                    </a>
+                </li>
+                <li>
+                    <a href="#dommages-certificat">
+                        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Certificat de travail
+                    </a>
+                </li>
+                <li>
+                    <a href="#dommages-releve">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M12 18v-6"></path><path d="M9 15l3 3 3-3"></path></svg>
+                        Relevé nominatif
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Script simple pour la démo (à remplacer par votre logique Vue.js) -->
+    <script>
+        const toggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        function toggleMenu() {
+            const isOpen = sidebar.classList.contains('open');
+            if (isOpen) {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('visible');
+                toggle.classList.remove('active');
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('visible');
+                toggle.classList.add('active');
+            }
+        }
+
+        toggle.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        
+        // Fermer le menu au clic sur un lien (pour mobile)
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', () => {
+                if(window.innerWidth <= 1385) toggleMenu();
+            });
+        });
+    </script>
+</body>
+</html>
